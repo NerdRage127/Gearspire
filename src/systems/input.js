@@ -79,6 +79,18 @@ class InputSystem {
                 }
             });
         }
+        
+        // Place random tower button
+        const placeRandomTowerBtn = document.getElementById('place-random-tower-btn');
+        if (placeRandomTowerBtn) {
+            placeRandomTowerBtn.addEventListener('click', () => {
+                if (window.Game && window.Game.getGears() > 0) {
+                    this.placeRandomTower();
+                } else {
+                    this.showMessage('No gears available');
+                }
+            });
+        }
         const upgradeBtn = document.getElementById('upgrade-btn');
         const sellBtn = document.getElementById('sell-btn');
         
@@ -428,6 +440,77 @@ class InputSystem {
     
     isDraftMode() {
         return this.draftMode;
+    }
+    
+    placeRandomTower() {
+        if (!window.Game || window.Game.getGears() <= 0) {
+            this.showMessage('No gears available');
+            return;
+        }
+        
+        // Get available tower types
+        const towerTypes = ['steamCannon', 'teslaCoil', 'frostCondenser', 'poisonGasVent', 'gearTurret'];
+        
+        // Pick a random tower type
+        const randomType = towerTypes[Math.floor(Math.random() * towerTypes.length)];
+        
+        // Find a random valid placement location
+        const validPositions = [];
+        for (let y = 0; y < window.Game.grid.height; y++) {
+            for (let x = 0; x < window.Game.grid.width; x++) {
+                if (window.Game.grid.canPlaceTower(x, y)) {
+                    validPositions.push({ x, y });
+                }
+            }
+        }
+        
+        if (validPositions.length === 0) {
+            this.showMessage('No valid placement locations available');
+            return;
+        }
+        
+        const randomPos = validPositions[Math.floor(Math.random() * validPositions.length)];
+        
+        // Create and place the tower
+        const TowerClass = this.getTowerClass(randomType);
+        if (TowerClass) {
+            const worldPos = window.Game.grid.gridToWorld(randomPos.x, randomPos.y);
+            const tower = new TowerClass(worldPos.x, worldPos.y);
+            
+            // Spend a gear
+            window.Game.spendGears(1);
+            
+            // Place the tower
+            if (window.Game.placeTower(tower, randomPos.x, randomPos.y)) {
+                this.showMessage(`Placed random ${this.getTowerDisplayName(randomType)}! Gears: ${window.Game.getGears()}`);
+                
+                // Check if we've placed 5 towers and need to enter selection phase
+                if (window.Game.getGears() === 0) {
+                    this.enterTowerSelectionPhase();
+                }
+            } else {
+                // Refund the gear if placement failed
+                window.Game.addGears(1);
+                this.showMessage('Failed to place tower');
+            }
+        }
+    }
+    
+    enterTowerSelectionPhase() {
+        // When all gears are spent, player must choose which tower to keep
+        this.showMessage('All gears spent! Choose one tower to keep. Others will be sold back.');
+        // Additional logic for tower selection phase would go here
+    }
+    
+    getTowerClass(type) {
+        const towerClasses = {
+            'steamCannon': window.SteamCannon,
+            'teslaCoil': window.TeslaCoil,
+            'frostCondenser': window.FrostCondenser,
+            'poisonGasVent': window.PoisonGasVent,
+            'gearTurret': window.GearTurret
+        };
+        return towerClasses[type];
     }
 }
 

@@ -68,6 +68,14 @@ class Grid {
             return false;
         }
         
+        // Check if within no-build zone around spawn point
+        const spawnDistance = Math.sqrt(
+            (x - this.pathStart.x) ** 2 + (y - this.pathStart.y) ** 2
+        );
+        if (spawnDistance <= 1.5) { // 1.5 tile radius no-build zone
+            return false;
+        }
+        
         // Temporarily place a tower to check if path is still valid
         this.setCell(x, y, 'tower');
         const pathExists = this.hasValidPath();
@@ -79,6 +87,14 @@ class Grid {
     canPlaceCrate(x, y) {
         const cell = this.getCell(x, y);
         if (!cell || cell.type !== 'empty') {
+            return false;
+        }
+        
+        // Check if within no-build zone around spawn point
+        const spawnDistance = Math.sqrt(
+            (x - this.pathStart.x) ** 2 + (y - this.pathStart.y) ** 2
+        );
+        if (spawnDistance <= 1.5) { // 1.5 tile radius no-build zone
             return false;
         }
         

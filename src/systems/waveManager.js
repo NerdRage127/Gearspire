@@ -149,11 +149,10 @@ class WaveManager {
     completeWave() {
         this.waveInProgress = false;
         
-        // Award bonus gold for completing wave
-        const bonusGold = 20 + this.currentWave * 5;
+        // Award 5 gears for completing wave
         if (window.Game) {
-            window.Game.addGold(bonusGold);
-            window.Game.addScore(bonusGold * 5);
+            window.Game.addGears(5);
+            window.Game.addScore(100 * this.currentWave); // Score bonus
             
             // Reset draft state for next wave
             window.Game.draftCompleted = false;
@@ -161,7 +160,7 @@ class WaveManager {
         
         // Notify UI
         if (window.Game && window.Game.ui) {
-            window.Game.ui.showWaveComplete(this.currentWave, bonusGold);
+            window.Game.ui.showWaveComplete(this.currentWave, 5); // Show 5 gears earned
         }
         
         // Auto-save progress
