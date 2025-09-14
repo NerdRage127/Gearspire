@@ -258,7 +258,8 @@ class InputSystem {
         if (panel) {
             panel.classList.add('hidden');
         }
-        this.roundPrep = false;
+        // Don't set roundPrep = false here - let it stay active until draft is completed
+        // this.roundPrep = false;
     }
     
     handleRoundPrepClick() {
