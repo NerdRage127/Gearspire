@@ -58,6 +58,39 @@ class Game {
         console.log('Gearspire initialized successfully');
     }
     
+    /**
+     * Foolproof method to hide the intro screen with multiple fallback mechanisms
+     */
+    hideIntroScreen() {
+        try {
+            const introScreen = document.getElementById('intro-screen');
+            if (introScreen) {
+                introScreen.classList.add('hidden');
+                introScreen.style.display = 'none'; // Additional failsafe
+                console.log('Intro screen hidden successfully');
+                return true;
+            } else {
+                console.warn('Intro screen element not found');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error hiding intro screen:', error);
+            // Emergency fallback - hide all elements with intro-overlay class
+            try {
+                const overlays = document.querySelectorAll('.intro-overlay');
+                overlays.forEach(overlay => {
+                    overlay.classList.add('hidden');
+                    overlay.style.display = 'none';
+                });
+                console.log('Emergency intro screen hide applied');
+                return true;
+            } catch (emergencyError) {
+                console.error('Emergency intro screen hide failed:', emergencyError);
+                return false;
+            }
+        }
+    }
+
     showIntroScreen() {
         const introScreen = document.getElementById('intro-screen');
         const saveGameCheck = document.getElementById('save-game-check');
@@ -85,6 +118,21 @@ class Game {
         // Show intro screen
         if (introScreen) {
             introScreen.classList.remove('hidden');
+            introScreen.style.display = ''; // Clear any inline display style
+            
+            // Add click-anywhere-to-dismiss functionality on the overlay background
+            const overlay = introScreen;
+            overlay.addEventListener('click', (e) => {
+                // Only dismiss if clicking the overlay background, not the panel content
+                if (e.target === overlay) {
+                    console.log('Intro screen dismissed by clicking overlay background');
+                    this.hideIntroScreen();
+                    // Start new game if no save data, otherwise let user choose
+                    if (!this.saveSystem.hasSaveData()) {
+                        this.startNewGame();
+                    }
+                }
+            });
         }
         
         // Set up event listeners
@@ -99,17 +147,31 @@ class Game {
                 this.continueGame();
             });
         }
+        
+        // Add automatic fallback timer (30 seconds)
+        setTimeout(() => {
+            const introStillVisible = document.getElementById('intro-screen');
+            if (introStillVisible && !introStillVisible.classList.contains('hidden')) {
+                console.warn('Intro screen still visible after 30 seconds, force hiding');
+                this.hideIntroScreen();
+                // Auto-start new game after timeout
+                this.startNewGame();
+            }
+        }, 30000);
+        
+        // Add console command for emergency dismissal
+        window.forceHideIntro = () => {
+            console.log('Emergency intro screen hide triggered via console');
+            this.hideIntroScreen();
+        };
     }
     
     startNewGame() {
         // Clear any saved data if starting new game
         this.saveSystem.deleteSave();
         
-        // Hide intro screen
-        const introScreen = document.getElementById('intro-screen');
-        if (introScreen) {
-            introScreen.classList.add('hidden');
-        }
+        // Hide intro screen using the foolproof method
+        this.hideIntroScreen();
         
         // Start game loop
         this.start();
@@ -123,11 +185,8 @@ class Game {
             this.saveSystem.restoreGameState(saveData);
         }
         
-        // Hide intro screen
-        const introScreen = document.getElementById('intro-screen');
-        if (introScreen) {
-            introScreen.classList.add('hidden');
-        }
+        // Hide intro screen using the foolproof method
+        this.hideIntroScreen();
         
         // Start game loop
         this.start();
@@ -544,6 +603,9 @@ class Game {
             overlay.remove();
         }
         
+        // Ensure intro screen is hidden
+        this.hideIntroScreen();
+        
         // Restart game
         this.isPlaying = true;
         this.saveSystem.startAutoSave();
@@ -551,9 +613,31 @@ class Game {
     }
     
     returnToMenu() {
-        // For now, just restart the game
-        // In a full implementation, this would return to a main menu
-        this.restart();
+        // Reset everything and show intro screen
+        this.isPlaying = false;
+        this.isPaused = false;
+        
+        // Clear save data
+        this.saveSystem.deleteSave();
+        
+        // Remove any overlays
+        const gameOverOverlay = document.querySelector('.game-over-overlay');
+        if (gameOverOverlay) {
+            gameOverOverlay.remove();
+        }
+        
+        // Reset game state
+        this.lives = this.maxLives;
+        this.score = 0;
+        this.gameTime = 0;
+        this.draftCompleted = false;
+        this.towersPlacedThisRound = 0;
+        this.towers = [];
+        this.projectiles = [];
+        
+        // Show intro screen
+        this.showIntroScreen();
+        this.ui.showMessage('Returned to main menu');
     }
     
     // Utility methods
