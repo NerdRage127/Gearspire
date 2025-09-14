@@ -120,9 +120,23 @@ class Creep {
             return effect.alive;
         });
         
-        // Check if reached end
+        // Check if reached end - must be close to actual home point
         if (this.pathIndex >= this.path.length) {
-            this.reachedEnd = true;
+            // Additional check: enemy must be within reasonable distance of home point
+            const grid = window.Game?.grid;
+            if (grid) {
+                const homePoint = grid.gridToWorld(grid.pathEnd.x, grid.pathEnd.y);
+                const distanceToHome = Math.sqrt(
+                    (this.x - homePoint.x) ** 2 + (this.y - homePoint.y) ** 2
+                );
+                // Only count as reached if within half a tile of the home point
+                if (distanceToHome <= (grid.tileSize / 2)) {
+                    this.reachedEnd = true;
+                }
+            } else {
+                // Fallback to old behavior if grid not available
+                this.reachedEnd = true;
+            }
         }
     }
     
@@ -171,8 +185,10 @@ class Creep {
         if (this.pathIndex < this.path.length) {
             const nextPoint = this.path[this.pathIndex];
             // Convert grid coordinates to world coordinates
-            this.targetX = nextPoint.x * 40 + 20; // 40 is tile size, 20 is offset to center
-            this.targetY = nextPoint.y * 40 + 20;
+            // Use the game's grid tile size instead of hard-coded value
+            const tileSize = window.Game?.grid?.tileSize || 40;
+            this.targetX = nextPoint.x * tileSize + tileSize / 2;
+            this.targetY = nextPoint.y * tileSize + tileSize / 2;
         }
     }
     

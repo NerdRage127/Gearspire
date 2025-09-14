@@ -144,11 +144,8 @@ class BaseTower {
     }
     
     sell() {
-        if (window.Game) {
-            window.Game.addGold(this.sellValue);
-            return true;
-        }
-        return false;
+        // Don't give gold anymore since we handle gears in the input system
+        return true;
     }
     
     getUpgradeCost() {

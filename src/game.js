@@ -17,13 +17,18 @@ class Game {
         
         // Game stats
         this.lives = 20;
-        this.gold = 100;
+        this.gears = 5; // Replace gold with gears, start with 5
         this.score = 0;
         this.maxLives = 20;
         this.availableCrates = 0;
         
+        // New gear-based mechanics
+        this.maxGearsPerRound = 5;
+        this.placedTowers = []; // Temporary towers placed during gear phase
+        this.isGearPhase = false;
+        
         // Game objects
-        this.grid = new Grid(20, 12, 40);
+        this.grid = new Grid(28, 17, 40); // 40% increase: 20*1.4=28, 12*1.4≈17
         this.towers = [];
         this.projectiles = [];
         
@@ -98,8 +103,8 @@ class Game {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Maintain aspect ratio (20:12 grid)
-        const targetAspect = 20 / 12;
+        // Maintain aspect ratio (28:17 grid)
+        const targetAspect = 28 / 17;
         const containerAspect = rect.width / rect.height;
         
         if (containerAspect > targetAspect) {
@@ -155,7 +160,7 @@ class Game {
         // Update UI
         this.ui.update({
             lives: this.lives,
-            gold: this.gold,
+            gold: this.gears, // Show gears in gold field for UI compatibility
             score: this.score,
             wave: this.waveManager.getCurrentWave(),
             enemyCount: this.waveManager.getEnemies().length,
@@ -341,20 +346,35 @@ class Game {
     }
     
     // Resource management
-    addGold(amount) {
-        this.gold += amount;
+    addGears(amount) {
+        this.gears += amount;
     }
     
-    spendGold(amount) {
-        if (this.gold >= amount) {
-            this.gold -= amount;
+    spendGears(amount) {
+        if (this.gears >= amount) {
+            this.gears -= amount;
             return true;
         }
         return false;
     }
     
+    getGears() {
+        return this.gears;
+    }
+    
+    // Legacy methods for compatibility during transition
+    addGold(amount) {
+        // Convert gold rewards to score points instead
+        this.addScore(amount * 10);
+    }
+    
+    spendGold(amount) {
+        // Always return false since we're not using gold anymore
+        return false;
+    }
+    
     getGold() {
-        return this.gold;
+        return this.gears; // Return gears for UI compatibility
     }
     
     addScore(points) {
@@ -398,7 +418,7 @@ class Game {
     restart() {
         // Reset game state
         this.lives = this.maxLives;
-        this.gold = 100;
+        this.gears = 5; // Start with 5 gears
         this.score = 0;
         this.gameTime = 0;
         this.isPaused = false;
@@ -410,7 +430,7 @@ class Game {
         this.projectiles = [];
         
         // Reset systems
-        this.grid = new Grid(20, 12, 40);
+        this.grid = new Grid(28, 17, 40);
         this.waveManager.reset();
         this.inputSystem.cancelPlacement();
         
