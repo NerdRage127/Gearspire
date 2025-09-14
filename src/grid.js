@@ -34,11 +34,9 @@ class Grid {
     }
     
     generateBasePath() {
-        // Create a simple straight path from start to end initially
-        const y = this.pathStart.y;
-        for (let x = this.pathStart.x; x <= this.pathEnd.x; x++) {
-            this.cells[y][x].type = 'path';
-        }
+        // No longer create a permanent path - allow dynamic pathfinding instead
+        // Enemies will find their own path around player-built obstacles
+        // This allows players to build towers and mazes anywhere on the map
     }
     
     getCell(x, y) {
