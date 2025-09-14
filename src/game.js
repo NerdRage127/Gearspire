@@ -17,15 +17,11 @@ class Game {
         
         // Game stats
         this.lives = 20;
-        this.gears = 5; // Replace gold with gears, start with 5
         this.score = 0;
         this.maxLives = 20;
-        this.availableCrates = 0;
-        
-        // New gear-based mechanics
-        this.maxGearsPerRound = 5;
-        this.placedTowers = []; // Temporary towers placed during gear phase
-        this.isGearPhase = false;
+        this.towers = [];
+        this.towersPlacedThisRound = 0;
+        this.maxTowersPerRound = 3; // Can place up to 3 towers per round
         
         // Game objects
         this.grid = new Grid(28, 17, 40); // 40% increase: 20*1.4=28, 12*1.4≈17
@@ -160,18 +156,18 @@ class Game {
         // Update UI
         this.ui.update({
             lives: this.lives,
-            gold: this.gears, // Show gears in gold field for UI compatibility
             score: this.score,
             wave: this.waveManager.getCurrentWave(),
             enemyCount: this.waveManager.getEnemies().length,
+            towerCount: this.towers.length,
             waveInProgress: this.waveManager.isWaveInProgress(),
             paused: this.isPaused
         });
         
-        // Check for draft mode - start draft before each wave after wave 0
+        // Check for round prep - start prep before each wave
         if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() >= 0) {
-            if (!this.inputSystem.isDraftMode() && !this.draftCompleted) {
-                this.startDraftPhase();
+            if (!this.inputSystem.isRoundPrep() && !this.draftCompleted) {
+                this.startRoundPrep();
             }
         }
         
@@ -215,7 +211,6 @@ class Game {
         if (!this.inputSystem.isPlacementMode()) return;
         
         const mousePos = this.inputSystem.getMouseGridPosition();
-        const worldPos = this.grid.gridToWorld(mousePos.x, mousePos.y);
         
         this.ctx.save();
         
@@ -232,27 +227,16 @@ class Game {
                 tileSize
             );
             
-            // Show tower preview
-            if (canPlace && this.inputSystem.towerType) {
-                const TowerClass = this.getTowerClass(this.inputSystem.towerType);
-                if (TowerClass) {
-                    const previewTower = new TowerClass(worldPos.x, worldPos.y);
-                    previewTower.showRange = true;
-                    this.ctx.globalAlpha = 0.7;
-                    previewTower.render(this.ctx, tileSize);
-                }
+            // Show preview tower icon
+            if (canPlace) {
+                this.ctx.fillStyle = '#ffd700';
+                this.ctx.font = 'bold 16px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('?', 
+                    mousePos.x * tileSize + tileSize/2, 
+                    mousePos.y * tileSize + tileSize/2 + 6
+                );
             }
-        } else if (this.inputSystem.placementMode === 'crate') {
-            const canPlace = this.grid.canPlaceCrate(mousePos.x, mousePos.y);
-            this.ctx.fillStyle = canPlace ? 'rgba(139, 69, 19, 0.5)' : 'rgba(255, 0, 0, 0.3)';
-            
-            const tileSize = this.grid.tileSize;
-            this.ctx.fillRect(
-                mousePos.x * tileSize,
-                mousePos.y * tileSize,
-                tileSize,
-                tileSize
-            );
         }
         
         this.ctx.restore();
@@ -273,40 +257,37 @@ class Game {
         }
     }
     
-    startDraftPhase() {
+    startRoundPrep() {
         this.draftCompleted = false;
-        this.inputSystem.startDraftMode();
+        this.towersPlacedThisRound = 0;
+        this.inputSystem.startRoundPrep();
     }
     
-    completeDraft(selectedTower, unselectedTowers) {
+    completeRoundPrep() {
         this.draftCompleted = true;
-        
-        // Add crates for unselected towers (they can be placed as walls)
-        this.availableCrates = unselectedTowers.length;
-        this.updateCrateButton();
-        
-        this.ui.showMessage(`Draft complete! ${this.availableCrates} crates available for mazing.`);
-    }
-    
-    updateCrateButton() {
-        const btn = document.getElementById('place-crate-btn');
-        if (btn) {
-            if (this.availableCrates > 0) {
-                btn.style.display = 'block';
-                btn.textContent = `Place Crate (${this.availableCrates})`;
-                btn.disabled = false;
-            } else {
-                btn.style.display = 'none';
-            }
-        }
+        this.ui.showMessage('Round preparation complete! Start the wave when ready.');
     }
     
     // Game actions
-    placeTower(tower, gridX, gridY) {
+    placeTower(gridX, gridY) {
         if (!this.grid.canPlaceTower(gridX, gridY)) return false;
+        if (this.towersPlacedThisRound >= 3) return false; // maxTowersPerRound = 3
+        
+        // Create a random tower
+        const towerType = TowerTypes.getRandomTowerType();
+        const worldPos = this.grid.gridToWorld(gridX, gridY);
+        const tower = TowerTypes.createTower(towerType, worldPos.x, worldPos.y);
         
         this.towers.push(tower);
         this.grid.setCell(gridX, gridY, 'tower', tower);
+        this.towersPlacedThisRound++;
+        
+        this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/3)`);
+        
+        // If we've placed max towers for this round, complete prep
+        if (this.towersPlacedThisRound >= 3) { // maxTowersPerRound = 3
+            this.completeRoundPrep();
+        }
         
         return true;
     }
@@ -329,54 +310,13 @@ class Game {
         }
     }
     
-    placeCrate(gridX, gridY) {
-        if (!this.grid.canPlaceCrate(gridX, gridY)) return false;
-        if (this.availableCrates <= 0) return false;
-        
-        this.grid.setCell(gridX, gridY, 'crate');
-        this.availableCrates--;
-        this.updateCrateButton();
-        return true;
-    }
-    
     createProjectile(x, y, targetX, targetY, damage, speed, type) {
         const projectile = new Projectile(x, y, targetX, targetY, damage, speed, type);
         this.projectiles.push(projectile);
         return projectile;
     }
     
-    // Resource management
-    addGears(amount) {
-        this.gears += amount;
-    }
-    
-    spendGears(amount) {
-        if (this.gears >= amount) {
-            this.gears -= amount;
-            return true;
-        }
-        return false;
-    }
-    
-    getGears() {
-        return this.gears;
-    }
-    
-    // Legacy methods for compatibility during transition
-    addGold(amount) {
-        // Convert gold rewards to score points instead
-        this.addScore(amount * 10);
-    }
-    
-    spendGold(amount) {
-        // Always return false since we're not using gold anymore
-        return false;
-    }
-    
-    getGold() {
-        return this.gears; // Return gears for UI compatibility
-    }
-    
+    // Resource management (no longer used but kept for compatibility)
     addScore(points) {
         this.score += points;
     }
@@ -418,12 +358,11 @@ class Game {
     restart() {
         // Reset game state
         this.lives = this.maxLives;
-        this.gears = 5; // Start with 5 gears
         this.score = 0;
         this.gameTime = 0;
         this.isPaused = false;
         this.draftCompleted = false;
-        this.availableCrates = 0;
+        this.towersPlacedThisRound = 0;
         
         // Clear game objects
         this.towers = [];
@@ -454,23 +393,13 @@ class Game {
     
     // Utility methods
     getTowerClass(type) {
-        const classes = {
-            'steamCannon': SteamCannon,
-            'teslaCoil': TeslaCoil,
-            'frostCondenser': FrostCondenser,
-            'poisonGasVent': PoisonGasVent,
-            'gearTurret': GearTurret
-        };
-        return classes[type];
+        // Legacy method - now handled by TowerTypes
+        return null;
     }
     
     // Debug methods
     debugSkipWave() {
         this.waveManager.skipWave();
-    }
-    
-    debugAddGold(amount = 1000) {
-        this.addGold(amount);
     }
     
     debugKillAll() {

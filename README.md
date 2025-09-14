@@ -1,61 +1,63 @@
 # Gearspire
 ⚙️ Gearspire
 
-A steampunk-inspired endless tower defense game built for the web. Players defend the floating city of Gearspire against waves of sky pirates and rogue automatons using mechanical towers, crates, and mazing strategies.
+A steampunk-inspired endless tower defense game built for the web. Players defend the floating city of Gearspire against waves of sky pirates and rogue automatons using randomly placed mechanical towers and strategic positioning.
 
 🎮 Gameplay Overview
 
-Endless Tower Defense – Survive as long as possible against scaling waves of enemies.
+**Endless Tower Defense** – Survive as long as possible against scaling waves of enemies.
 
-Unique Draft System – At the start of each round, players choose 1 tower from 5 random options.
+**Strategic Placement System** – Each round, players can place up to 3 towers in chosen locations, but the tower type is randomized for each placement.
 
-The 4 unchosen towers transform into Crates, which can be placed as walls to maze enemies.
+**Random Tower Mechanics** – Players choose WHERE to place towers, but the game randomly determines WHAT type of tower is placed, creating dynamic strategic decisions.
 
-Mazing Allowed – Players can shape enemy paths with crates but cannot completely block them.
+**No Currency System** – Focus is on strategic placement and positioning rather than resource management.
 
-Economy & Strategy – Earn gold from kills, upgrade towers, and sell/refund old defenses.
+**Lives System** – Start with 20 lives; lose when enemies reach your city's core.
 
-Lives System – Start with 20 lives; lose when creeps reach your city’s core.
+**Early Wave Balance** – First few waves feature slower enemies and fewer spawns to help players establish defenses.
 
-🏰 Towers (Clockwork Devices)
+🏰 Tower Types (All Tier 1)
 
-Steam Cannon – AoE splash, slow fire rate.
+**Gear Turret** – Fast, cheap, reliable basic damage.
 
-Tesla Coil – Lightning arcs chaining between enemies.
+**Steam Cannon** – AoE splash damage with slow fire rate.
 
-Frost Condenser – Chilled bursts that slow creeps.
+**Tesla Coil** – Chain lightning between enemies.
 
-Poison Gas Vent – Damage-over-time clouds.
+**Frost Condenser** – Chilled bursts that slow enemies.
 
-Gear Turret – Fast, cheap, reliable.
+**Poison Gas Vent** – Poison damage over time clouds.
 
-Each tower can be upgraded up to 3 tiers and has targeting modes (First, Strongest, Closest, Random).
+Each tower has a single tier with no upgrades, emphasizing placement strategy over progression mechanics. Towers can be sold but cannot be upgraded.
 
 👾 Enemies (Sky Pirates & Automatons)
 
-Raider – Basic pirate.
+**Raider** – Basic pirate.
 
-Scout – Fast hoverboard runner.
+**Scout** – Fast hoverboard runner.
 
-Clockwork Golem – Heavy, slow tank.
+**Clockwork Golem** – Heavy, slow tank.
 
-Airship – Shielded, reduces incoming damage.
+**Airship** – Shielded, reduces incoming damage.
 
-Spider Drone – Regenerates HP over time.
+**Spider Drone** – Regenerates HP over time.
+
+Enemies start slower and fewer in early waves, gradually increasing in speed and numbers as waves progress.
 
 🖥️ Technical Details
 
-Platform: HTML5 Canvas + vanilla JavaScript.
+**Platform**: HTML5 Canvas + vanilla JavaScript.
 
-View: 2D top-down grid (20×12 tiles).
+**View**: 2D top-down grid (28×17 tiles, expanded from original 20×12).
 
-Pathfinding: A* algorithm ensures valid paths for enemies.
+**Pathfinding**: A* algorithm ensures valid paths for enemies.
 
-Persistence: Auto-save via localStorage.
+**Persistence**: Auto-save via localStorage.
 
-Performance Goal: Smooth gameplay with 100+ enemies on-screen.
+**Performance Goal**: Smooth gameplay with 100+ enemies on-screen.
 
-📂 File Structure (Planned)
+📂 File Structure
 / (root)
   index.html
   styles.css
@@ -63,36 +65,33 @@ Performance Goal: Smooth gameplay with 100+ enemies on-screen.
     game.js
     grid.js
     pathfinding.js
+    towerTypes.js          # Consolidated tower definitions
     entities/
       creep.js
       projectile.js
       towers/
-        baseTower.js
-        steamCannon.js
-        teslaCoil.js
-        frostCondenser.js
-        poisonGasVent.js
-        gearTurret.js
+        baseTower.js       # Base tower class
     systems/
       waveManager.js
       input.js
       ui.js
       save.js
 
-🚀 Roadmap
+🚀 Game Features
 
- Core grid + pathfinding
+✅ Core grid + pathfinding
+✅ Basic enemy movement + waves  
+✅ Random tower placement system
+✅ Round preparation phase (place up to 3 towers)
+✅ Endless scaling waves with early-game balance
+✅ HUD and UI panels
+✅ Save/load game state
+✅ Consolidated tower type system for easy expansion
 
- Basic creep movement + waves
+🎯 Strategic Elements
 
- Tower placement, upgrade, sell
-
- Round draft system (choose 1 tower, others → crates)
-
- Endless scaling waves
-
- HUD, UI panels, and inventory
-
- Save/load game state
-
- Add sound, polish visuals
+- **Placement Strategy**: Choose optimal locations for random towers
+- **Adaptive Defense**: Work with whatever towers you get
+- **Path Control**: Block enemy routes while maintaining valid paths
+- **Wave Preparation**: Use the brief prep time between waves wisely
+- **No Resource Management**: Focus purely on tactical decisions

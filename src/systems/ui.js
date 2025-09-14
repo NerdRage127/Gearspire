@@ -7,60 +7,18 @@ class UI {
     constructor() {
         this.elements = {
             lives: document.getElementById('lives'),
-            gold: document.getElementById('gold'),
+            towerCount: document.getElementById('tower-count'),
             wave: document.getElementById('wave'),
             score: document.getElementById('score'),
             fps: document.getElementById('fps'),
             enemyCount: document.getElementById('enemy-count'),
             startWaveBtn: document.getElementById('start-wave-btn'),
-            pauseBtn: document.getElementById('pause-btn'),
-            towerList: document.getElementById('tower-list')
+            pauseBtn: document.getElementById('pause-btn')
         };
         
         this.lastFpsUpdate = 0;
         this.frameCount = 0;
         this.currentFps = 0;
-        
-        this.initializeTowerList();
-    }
-    
-    initializeTowerList() {
-        const towerData = [
-            { type: 'gearTurret', name: 'Gear Turret', cost: 40, description: 'Fast, cheap, reliable' },
-            { type: 'frostCondenser', name: 'Frost Condenser', cost: 60, description: 'Slows enemies' },
-            { type: 'steamCannon', name: 'Steam Cannon', cost: 75, description: 'AoE splash damage' },
-            { type: 'teslaCoil', name: 'Tesla Coil', cost: 90, description: 'Chain lightning' },
-            { type: 'poisonGasVent', name: 'Poison Gas Vent', cost: 55, description: 'Poison damage over time' }
-        ];
-        
-        if (this.elements.towerList) {
-            this.elements.towerList.innerHTML = '';
-            
-            towerData.forEach(tower => {
-                const card = document.createElement('div');
-                card.className = 'tower-card';
-                card.dataset.type = tower.type;
-                
-                card.innerHTML = `
-                    <h5>${tower.name} <span class="cost">${tower.cost}g</span></h5>
-                    <p>${tower.description}</p>
-                `;
-                
-                card.addEventListener('click', () => {
-                    if (window.Game && window.Game.inputSystem) {
-                        if (window.Game.getGold() >= tower.cost) {
-                            window.Game.inputSystem.towerType = tower.type;
-                            window.Game.inputSystem.placementMode = 'tower';
-                            this.showMessage(`Click to place ${tower.name}`);
-                        } else {
-                            this.showMessage('Not enough gold');
-                        }
-                    }
-                });
-                
-                this.elements.towerList.appendChild(card);
-            });
-        }
     }
     
     update(gameState) {
@@ -69,8 +27,8 @@ class UI {
             this.elements.lives.textContent = gameState.lives;
         }
         
-        if (this.elements.gold) {
-            this.elements.gold.textContent = gameState.gold;
+        if (this.elements.towerCount) {
+            this.elements.towerCount.textContent = gameState.towerCount || 0;
         }
         
         if (this.elements.wave) {
@@ -143,8 +101,8 @@ class UI {
         this.showMessage(`Wave ${waveNumber} started!`);
     }
     
-    showWaveComplete(waveNumber, bonusGold) {
-        this.showMessage(`Wave ${waveNumber} complete! Bonus: ${bonusGold} gold`);
+    showWaveComplete(waveNumber) {
+        this.showMessage(`Wave ${waveNumber} complete! Prepare for the next wave.`);
     }
     
     showGameOver(finalScore, finalWave) {

@@ -10,8 +10,8 @@ class WaveManager {
         this.waveInProgress = false;
         this.spawnQueue = [];
         this.spawnTimer = 0;
-        this.spawnDelay = 30; // frames between spawns
-        this.baseEnemyCount = 10;
+        this.spawnDelay = 60; // Slower initial spawn rate (was 30)
+        this.baseEnemyCount = 5; // Fewer enemies initially (was 10)
         this.waveStartTime = 0;
         
         // Enemy type distribution by wave
@@ -39,14 +39,18 @@ class WaveManager {
     generateSpawnQueue() {
         this.spawnQueue = [];
         
-        const enemyCount = this.baseEnemyCount + Math.floor(this.currentWave * 2);
+        // Scale enemy count more gradually
+        const enemyCount = this.baseEnemyCount + Math.floor(this.currentWave * 1.5); // was * 2
         const waveStrength = this.currentWave;
+        
+        // Gradually decrease spawn delay as waves progress
+        const currentSpawnDelay = Math.max(20, this.spawnDelay - (this.currentWave * 2));
         
         for (let i = 0; i < enemyCount; i++) {
             const enemyType = this.selectEnemyType(waveStrength);
             this.spawnQueue.push({
                 type: enemyType,
-                spawnTime: i * this.spawnDelay
+                spawnTime: i * currentSpawnDelay
             });
         }
         
@@ -102,11 +106,10 @@ class WaveManager {
         this.enemies = this.enemies.filter(enemy => {
             enemy.update();
             
-            // Remove dead enemies and award gold
+            // Remove dead enemies and award score
             if (!enemy.isAlive()) {
                 if (window.Game) {
-                    window.Game.addGold(enemy.getGoldValue());
-                    window.Game.addScore(enemy.getGoldValue() * 10);
+                    window.Game.addScore(enemy.getGoldValue() * 10); // Convert gold to score
                 }
                 return false;
             }
@@ -135,13 +138,20 @@ class WaveManager {
         const startPos = grid.gridToWorld(grid.pathStart.x, grid.pathStart.y);
         const enemy = new Creep(type, startPos.x, startPos.y, path);
         
-        // Scale enemy health based on wave
-        const healthMultiplier = 1 + (this.currentWave - 1) * 0.2;
+        // Scale enemy health based on wave but more gradually
+        const healthMultiplier = 1 + (this.currentWave - 1) * 0.15; // was 0.2
         enemy.maxHealth = Math.floor(enemy.maxHealth * healthMultiplier);
         enemy.health = enemy.maxHealth;
         
-        // Scale gold value
+        // Scale gold value (for score calculation)
         enemy.goldValue = Math.floor(enemy.goldValue * (1 + (this.currentWave - 1) * 0.1));
+        
+        // Make enemies slower in early waves
+        if (this.currentWave <= 3) {
+            enemy.speed *= 0.7; // 30% slower for first 3 waves
+        } else if (this.currentWave <= 5) {
+            enemy.speed *= 0.85; // 15% slower for waves 4-5
+        }
         
         this.enemies.push(enemy);
     }
@@ -149,18 +159,18 @@ class WaveManager {
     completeWave() {
         this.waveInProgress = false;
         
-        // Award 5 gears for completing wave
+        // Award score bonus for completing wave
         if (window.Game) {
-            window.Game.addGears(5);
             window.Game.addScore(100 * this.currentWave); // Score bonus
             
-            // Reset draft state for next wave
+            // Reset round prep state for next wave
             window.Game.draftCompleted = false;
+            window.Game.towersPlacedThisRound = 0;
         }
         
         // Notify UI
         if (window.Game && window.Game.ui) {
-            window.Game.ui.showWaveComplete(this.currentWave, 5); // Show 5 gears earned
+            window.Game.ui.showWaveComplete(this.currentWave);
         }
         
         // Auto-save progress
@@ -215,8 +225,7 @@ class WaveManager {
     killAllEnemies() {
         this.enemies.forEach(enemy => {
             if (window.Game) {
-                window.Game.addGold(enemy.getGoldValue());
-                window.Game.addScore(enemy.getGoldValue() * 10);
+                window.Game.addScore(enemy.getGoldValue() * 10); // Convert to score
             }
         });
         this.enemies = [];

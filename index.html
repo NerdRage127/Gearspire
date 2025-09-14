@@ -15,7 +15,7 @@
                     <span>Lives: </span><span id="lives">20</span>
                 </div>
                 <div class="stat">
-                    <span>Gears: </span><span id="gold">5</span>
+                    <span>Towers: </span><span id="tower-count">0</span>
                 </div>
                 <div class="stat">
                     <span>Wave: </span><span id="wave">1</span>
@@ -31,9 +31,9 @@
                 <canvas id="game-canvas" width="800" height="480"></canvas>
                 <div id="game-overlay">
                     <div id="draft-panel" class="hidden">
-                        <h3>Choose Your Tower</h3>
-                        <p>Select 1 tower. The others will become crates for mazing.</p>
-                        <div id="draft-options"></div>
+                        <h3>Round Starting</h3>
+                        <p>Prepare for wave! Click on empty tiles to place random towers.</p>
+                        <div id="round-info"></div>
                     </div>
                     
                     <div id="tower-info" class="hidden">
@@ -52,14 +52,32 @@
                 <div id="controls">
                     <button id="start-wave-btn" class="primary">Start Wave</button>
                     <button id="pause-btn">Pause</button>
-                    <button id="place-random-tower-btn" class="secondary">Place Random Tower</button>
-                    <button id="place-crate-btn" class="secondary" style="display: none;">Place Crate</button>
+                    <button id="place-tower-btn" class="secondary">Place Tower</button>
                 </div>
                 
                 <div id="tower-info-sidebar">
-                    <h3>Available Towers</h3>
+                    <h3>Tower Types</h3>
                     <div id="tower-list">
-                        <!-- Tower info will be populated by JavaScript -->
+                        <div>
+                            <h5>Gear Turret</h5>
+                            <p>Fast, cheap, reliable</p>
+                        </div>
+                        <div>
+                            <h5>Frost Condenser</h5>
+                            <p>Slows enemies</p>
+                        </div>
+                        <div>
+                            <h5>Steam Cannon</h5>
+                            <p>AoE splash damage</p>
+                        </div>
+                        <div>
+                            <h5>Tesla Coil</h5>
+                            <p>Chain lightning</p>
+                        </div>
+                        <div>
+                            <h5>Poison Gas Vent</h5>
+                            <p>Poison damage over time</p>
+                        </div>
                     </div>
                 </div>
                 
@@ -89,11 +107,7 @@
     <script src="src/entities/projectile.js"></script>
     <script src="src/entities/creep.js"></script>
     <script src="src/entities/towers/baseTower.js"></script>
-    <script src="src/entities/towers/steamCannon.js"></script>
-    <script src="src/entities/towers/teslaCoil.js"></script>
-    <script src="src/entities/towers/frostCondenser.js"></script>
-    <script src="src/entities/towers/poisonGasVent.js"></script>
-    <script src="src/entities/towers/gearTurret.js"></script>
+    <script src="src/towerTypes.js"></script>
     <script src="src/systems/waveManager.js"></script>
     <script src="src/systems/input.js"></script>
     <script src="src/systems/ui.js"></script>

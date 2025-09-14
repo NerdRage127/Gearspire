@@ -9,10 +9,8 @@ class InputSystem {
         this.grid = grid;
         this.mouse = { x: 0, y: 0, down: false };
         this.selectedTower = null;
-        this.placementMode = null; // 'tower' or 'crate'
-        this.towerType = null;
-        this.draftMode = false;
-        this.draftOptions = [];
+        this.placementMode = null; // 'tower' only now
+        this.roundPrep = false;
         
         this.setupEventListeners();
     }
@@ -37,8 +35,8 @@ class InputSystem {
         if (startWaveBtn) {
             startWaveBtn.addEventListener('click', () => {
                 if (window.Game && window.Game.waveManager) {
-                    if (this.draftMode) {
-                        this.showDraftPanel();
+                    if (this.roundPrep) {
+                        this.showRoundPrepPanel();
                     } else {
                         window.Game.waveManager.startWave();
                     }
@@ -66,28 +64,15 @@ class InputSystem {
             });
         }
         
-        // Place crate button
-        const placeCrateBtn = document.getElementById('place-crate-btn');
-        if (placeCrateBtn) {
-            placeCrateBtn.addEventListener('click', () => {
-                if (window.Game && window.Game.availableCrates > 0) {
-                    this.placementMode = 'crate';
-                    this.towerType = null;
-                    this.showMessage('Click to place crate for mazing');
+        // Place tower button
+        const placeTowerBtn = document.getElementById('place-tower-btn');
+        if (placeTowerBtn) {
+            placeTowerBtn.addEventListener('click', () => {
+                if (window.Game && window.Game.towersPlacedThisRound < 3) { // maxTowersPerRound = 3
+                    this.placementMode = 'tower';
+                    this.showMessage('Click on empty tiles to place random towers');
                 } else {
-                    this.showMessage('No crates available');
-                }
-            });
-        }
-        
-        // Place random tower button
-        const placeRandomTowerBtn = document.getElementById('place-random-tower-btn');
-        if (placeRandomTowerBtn) {
-            placeRandomTowerBtn.addEventListener('click', () => {
-                if (window.Game && window.Game.getGears() > 0) {
-                    this.placeRandomTower();
-                } else {
-                    this.showMessage('No gears available');
+                    this.showMessage('Maximum towers placed for this round');
                 }
             });
         }
@@ -124,17 +109,15 @@ class InputSystem {
     }
     
     handleLeftClick() {
-        if (this.draftMode) {
-            this.handleDraftClick();
+        if (this.roundPrep) {
+            this.handleRoundPrepClick();
             return;
         }
         
         const gridPos = this.grid.worldToGrid(this.mouse.x, this.mouse.y);
         
-        if (this.placementMode === 'tower' && this.towerType) {
+        if (this.placementMode === 'tower') {
             this.placeTower(gridPos.x, gridPos.y);
-        } else if (this.placementMode === 'crate') {
-            this.placeCrate(gridPos.x, gridPos.y);
         } else {
             this.selectTower(gridPos.x, gridPos.y);
         }
@@ -182,35 +165,13 @@ class InputSystem {
             return;
         }
         
-        if (!window.Game || !this.towerType) return;
+        if (!window.Game) return;
         
-        const towerClass = this.getTowerClass(this.towerType);
-        if (!towerClass) return;
-        
-        const cost = new towerClass(0, 0).cost;
-        if (window.Game.getGold() < cost) {
-            this.showMessage('Not enough gold');
-            return;
-        }
-        
-        // Create and place tower
-        const worldPos = this.grid.gridToWorld(gridX, gridY);
-        const tower = new towerClass(worldPos.x, worldPos.y);
-        
-        if (window.Game.placeTower(tower, gridX, gridY)) {
-            window.Game.spendGold(cost);
-            this.cancelPlacement();
-        }
-    }
-    
-    placeCrate(gridX, gridY) {
-        if (!this.grid.canPlaceCrate(gridX, gridY)) {
-            this.showMessage('Cannot place crate here');
-            return;
-        }
-        
-        if (window.Game && window.Game.placeCrate(gridX, gridY)) {
-            // Crates are free during draft mode
+        if (window.Game.placeTower(gridX, gridY)) {
+            // Tower placed successfully
+            if (window.Game.towersPlacedThisRound >= 3) { // maxTowersPerRound = 3
+                this.cancelPlacement();
+            }
         }
     }
     
@@ -245,120 +206,58 @@ class InputSystem {
     sellTower() {
         if (!this.selectedTower) return;
         
-        const sellValue = this.selectedTower.sellValue;
         if (this.selectedTower.sell()) {
             // Remove tower from grid
             if (window.Game) {
                 window.Game.removeTower(this.selectedTower);
-                // Give back 1 gear for selling a tower (not crates)
-                window.Game.addGears(1);
             }
             
             this.selectedTower = null;
             this.hideTowerInfo();
-            this.showMessage(`Tower sold for 1 gear`);
+            this.showMessage('Tower sold');
         }
     }
     
-    getTowerClass(type) {
-        const classes = {
-            'steamCannon': SteamCannon,
-            'teslaCoil': TeslaCoil,
-            'frostCondenser': FrostCondenser,
-            'poisonGasVent': PoisonGasVent,
-            'gearTurret': GearTurret
-        };
-        return classes[type];
+    startRoundPrep() {
+        this.roundPrep = true;
+        this.showRoundPrepPanel();
     }
     
-    startDraftMode() {
-        this.draftMode = true;
-        this.generateDraftOptions();
-        this.showDraftPanel();
-    }
-    
-    generateDraftOptions() {
-        const towerTypes = ['steamCannon', 'teslaCoil', 'frostCondenser', 'poisonGasVent', 'gearTurret'];
-        this.draftOptions = [];
-        
-        // Select 5 random towers (with possible duplicates)
-        for (let i = 0; i < 5; i++) {
-            const type = towerTypes[Math.floor(Math.random() * towerTypes.length)];
-            this.draftOptions.push(type);
-        }
-    }
-    
-    showDraftPanel() {
+    showRoundPrepPanel() {
         const panel = document.getElementById('draft-panel');
-        const optionsContainer = document.getElementById('draft-options');
+        const infoContainer = document.getElementById('round-info');
         
-        if (!panel || !optionsContainer) return;
+        if (!panel || !infoContainer) return;
         
-        optionsContainer.innerHTML = '';
-        
-        this.draftOptions.forEach((type, index) => {
-            const option = document.createElement('div');
-            option.className = 'draft-option';
-            option.dataset.index = index;
-            option.dataset.type = type;
-            
-            const towerClass = this.getTowerClass(type);
-            if (towerClass) {
-                const tower = new towerClass(0, 0);
-                option.innerHTML = `
-                    <h5>${this.getTowerDisplayName(type)}</h5>
-                    <p>Cost: ${tower.cost}</p>
-                    <p>Damage: ${tower.damage}</p>
-                    <p>Range: ${tower.range}</p>
-                `;
-            }
-            
-            option.addEventListener('click', () => this.selectDraftOption(index, type));
-            optionsContainer.appendChild(option);
-        });
+        infoContainer.innerHTML = `
+            <p>You can place up to 3 towers this round.</p>
+            <p>Towers placed: ${window.Game ? window.Game.towersPlacedThisRound : 0}/3</p>
+            <p>Tower types are random when placed.</p>
+        `;
         
         panel.classList.remove('hidden');
+        
+        // Auto-hide after 3 seconds
+        setTimeout(() => {
+            this.hideRoundPrepPanel();
+        }, 3000);
     }
     
-    selectDraftOption(index, type) {
-        // Set selected tower type for placement
-        this.towerType = type;
-        this.placementMode = 'tower';
-        
-        // Get unselected tower types for crates
-        const unselectedTowers = this.draftOptions.filter((_, i) => i !== index);
-        
-        this.hideDraftPanel();
-        this.draftMode = false;
-        
-        // Notify game of draft completion
-        if (window.Game) {
-            window.Game.completeDraft(type, unselectedTowers);
-        }
-        
-        this.showMessage(`Selected ${this.getTowerDisplayName(type)}. Click to place, right-click to cancel.`);
-    }
-    
-    hideDraftPanel() {
+    hideRoundPrepPanel() {
         const panel = document.getElementById('draft-panel');
         if (panel) {
             panel.classList.add('hidden');
         }
+        this.roundPrep = false;
     }
     
-    handleDraftClick() {
-        // Draft clicks are handled by the draft panel buttons
+    handleRoundPrepClick() {
+        // Round prep clicks are handled by showing the panel
     }
     
     getTowerDisplayName(type) {
-        const names = {
-            'steamCannon': 'Steam Cannon',
-            'teslaCoil': 'Tesla Coil',
-            'frostCondenser': 'Frost Condenser',
-            'poisonGasVent': 'Poison Gas Vent',
-            'gearTurret': 'Gear Turret'
-        };
-        return names[type] || type;
+        const stats = TowerTypes.getTowerStats(type);
+        return stats.name || type;
     }
     
     showTowerInfo(tower) {
@@ -371,17 +270,16 @@ class InputSystem {
             
             const statsDiv = document.getElementById('tower-stats');
             statsDiv.innerHTML = `
-                <p>Level: ${info.level}/${tower.maxLevel}</p>
+                <p>Level: ${info.level}</p>
                 <p>Damage: ${info.damage}</p>
                 <p>Range: ${info.range.toFixed(1)}</p>
                 <p>Fire Rate: ${(60 / info.fireRate).toFixed(1)}/sec</p>
-                <p>Sell Value: ${info.sellValue}</p>
             `;
             
             const upgradeBtn = document.getElementById('upgrade-btn');
             if (upgradeBtn) {
-                upgradeBtn.disabled = info.level >= tower.maxLevel || window.Game.getGold() < info.upgradeCost;
-                upgradeBtn.textContent = `Upgrade (${info.upgradeCost})`;
+                upgradeBtn.disabled = true; // No upgrades in tier 1 towers
+                upgradeBtn.textContent = 'Max Level';
             }
             
             panel.classList.remove('hidden');
@@ -403,7 +301,6 @@ class InputSystem {
     
     cancelPlacement() {
         this.placementMode = null;
-        this.towerType = null;
         
         if (this.selectedTower) {
             this.selectedTower.showRange = false;
@@ -440,79 +337,8 @@ class InputSystem {
         return this.placementMode !== null;
     }
     
-    isDraftMode() {
-        return this.draftMode;
-    }
-    
-    placeRandomTower() {
-        if (!window.Game || window.Game.getGears() <= 0) {
-            this.showMessage('No gears available');
-            return;
-        }
-        
-        // Get available tower types
-        const towerTypes = ['steamCannon', 'teslaCoil', 'frostCondenser', 'poisonGasVent', 'gearTurret'];
-        
-        // Pick a random tower type
-        const randomType = towerTypes[Math.floor(Math.random() * towerTypes.length)];
-        
-        // Find a random valid placement location
-        const validPositions = [];
-        for (let y = 0; y < window.Game.grid.height; y++) {
-            for (let x = 0; x < window.Game.grid.width; x++) {
-                if (window.Game.grid.canPlaceTower(x, y)) {
-                    validPositions.push({ x, y });
-                }
-            }
-        }
-        
-        if (validPositions.length === 0) {
-            this.showMessage('No valid placement locations available');
-            return;
-        }
-        
-        const randomPos = validPositions[Math.floor(Math.random() * validPositions.length)];
-        
-        // Create and place the tower
-        const TowerClass = this.getTowerClass(randomType);
-        if (TowerClass) {
-            const worldPos = window.Game.grid.gridToWorld(randomPos.x, randomPos.y);
-            const tower = new TowerClass(worldPos.x, worldPos.y);
-            
-            // Spend a gear
-            window.Game.spendGears(1);
-            
-            // Place the tower
-            if (window.Game.placeTower(tower, randomPos.x, randomPos.y)) {
-                this.showMessage(`Placed random ${this.getTowerDisplayName(randomType)}! Gears: ${window.Game.getGears()}`);
-                
-                // Check if we've placed 5 towers and need to enter selection phase
-                if (window.Game.getGears() === 0) {
-                    this.enterTowerSelectionPhase();
-                }
-            } else {
-                // Refund the gear if placement failed
-                window.Game.addGears(1);
-                this.showMessage('Failed to place tower');
-            }
-        }
-    }
-    
-    enterTowerSelectionPhase() {
-        // When all gears are spent, player must choose which tower to keep
-        this.showMessage('All gears spent! Choose one tower to keep. Others will be sold back.');
-        // Additional logic for tower selection phase would go here
-    }
-    
-    getTowerClass(type) {
-        const towerClasses = {
-            'steamCannon': window.SteamCannon,
-            'teslaCoil': window.TeslaCoil,
-            'frostCondenser': window.FrostCondenser,
-            'poisonGasVent': window.PoisonGasVent,
-            'gearTurret': window.GearTurret
-        };
-        return towerClasses[type];
+    isRoundPrep() {
+        return this.roundPrep;
     }
 }
 
