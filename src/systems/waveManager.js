@@ -176,8 +176,8 @@ class WaveManager {
         }
         
         // Auto-save progress
-        if (window.SaveSystem) {
-            window.SaveSystem.saveGame();
+        if (window.Game && window.Game.saveSystem) {
+            window.Game.saveSystem.saveGame();
         }
     }
     
