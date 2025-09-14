@@ -14,6 +14,8 @@ class Game {
         this.gameTime = 0;
         this.lastFrameTime = 0;
         this.draftCompleted = false;
+        this.inSelectionPhase = false; // New state for tower selection
+        this.newTowersThisRound = []; // Track newly placed towers for selection
         
         // Game stats
         this.lives = 20;
@@ -21,7 +23,7 @@ class Game {
         this.maxLives = 20;
         this.towers = [];
         this.towersPlacedThisRound = 0;
-        this.maxTowersPerRound = 3; // Can place up to 3 towers per round
+        this.maxTowersPerRound = 5; // Can place up to 5 towers per round
         
         // Game objects
         this.grid = new Grid(28, 17, 40); // 40% increase: 20*1.4=28, 12*1.4≈17
@@ -193,6 +195,11 @@ class Game {
         // Render towers
         this.towers.forEach(tower => {
             tower.render(this.ctx, this.grid.tileSize);
+            
+            // Update glow animation for new towers
+            if (tower.isNewThisRound) {
+                tower.glowAnimation = (tower.glowAnimation || 0) + 1;
+            }
         });
         
         // Render projectiles
@@ -259,34 +266,91 @@ class Game {
     
     startRoundPrep() {
         this.draftCompleted = false;
+        this.inSelectionPhase = false;
         this.towersPlacedThisRound = 0;
+        this.newTowersThisRound = [];
         this.inputSystem.startRoundPrep();
     }
     
     completeRoundPrep() {
         this.draftCompleted = true;
+        this.inputSystem.hideRoundPrepPanel(); // Hide the draft panel
         this.ui.showMessage('Round preparation complete! Start the wave when ready.');
+    }
+    
+    enterSelectionPhase() {
+        this.inSelectionPhase = true;
+        this.inputSystem.enterSelectionMode();
+        this.ui.showMessage('Select one tower to keep - click on it to see stats and select it!');
+    }
+    
+    selectTowerToKeep(tower) {
+        if (!this.inSelectionPhase || !tower.isNewThisRound) return false;
+        
+        // Mark the selected tower
+        tower.isSelected = true;
+        tower.isNewThisRound = false; // No longer new, it's chosen
+        
+        // Convert all other new towers to crates
+        this.newTowersThisRound.forEach(newTower => {
+            if (newTower !== tower) {
+                this.convertTowerToCrate(newTower);
+            }
+        });
+        
+        // Clear the new towers list
+        this.newTowersThisRound = [];
+        this.inSelectionPhase = false;
+        this.completeRoundPrep();
+        
+        this.ui.showMessage(`${TowerTypes.getTowerStats(tower.type).name} selected! Other towers converted to crates.`);
+        return true;
+    }
+    
+    convertTowerToCrate(tower) {
+        // Remove tower from towers array
+        const towerIndex = this.towers.indexOf(tower);
+        if (towerIndex !== -1) {
+            this.towers.splice(towerIndex, 1);
+        }
+        
+        // Find tower position in grid and convert to crate
+        for (let y = 0; y < this.grid.height; y++) {
+            for (let x = 0; x < this.grid.width; x++) {
+                const cell = this.grid.getCell(x, y);
+                if (cell && cell.tower === tower) {
+                    this.grid.setCell(x, y, 'crate');
+                    return;
+                }
+            }
+        }
     }
     
     // Game actions
     placeTower(gridX, gridY) {
         if (!this.grid.canPlaceTower(gridX, gridY)) return false;
-        if (this.towersPlacedThisRound >= 3) return false; // maxTowersPerRound = 3
+        if (this.towersPlacedThisRound >= 5) return false; // maxTowersPerRound = 5
         
         // Create a random tower
         const towerType = TowerTypes.getRandomTowerType();
         const worldPos = this.grid.gridToWorld(gridX, gridY);
         const tower = TowerTypes.createTower(towerType, worldPos.x, worldPos.y);
         
+        // Mark this tower as newly placed for this round
+        tower.isNewThisRound = true;
+        tower.isSelected = false;
+        tower.glowAnimation = 0;
+        
         this.towers.push(tower);
+        this.newTowersThisRound.push(tower);
         this.grid.setCell(gridX, gridY, 'tower', tower);
         this.towersPlacedThisRound++;
         
-        this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/3)`);
+        this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/5)`);
         
-        // If we've placed max towers for this round, complete prep
-        if (this.towersPlacedThisRound >= 3) { // maxTowersPerRound = 3
-            this.completeRoundPrep();
+        // If we've placed max towers for this round, enter selection phase
+        if (this.towersPlacedThisRound >= 5) { // maxTowersPerRound = 5
+            this.enterSelectionPhase();
         }
         
         return true;

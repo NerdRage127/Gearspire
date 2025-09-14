@@ -11,6 +11,7 @@ class InputSystem {
         this.selectedTower = null;
         this.placementMode = null; // 'tower' only now
         this.roundPrep = false;
+        this.selectionMode = false; // New mode for selecting towers to keep
         
         this.setupEventListeners();
     }
@@ -44,6 +45,16 @@ class InputSystem {
             });
         }
         
+        // Start draft button (new play button in round prep panel)
+        const startDraftBtn = document.getElementById('start-draft-btn');
+        if (startDraftBtn) {
+            startDraftBtn.addEventListener('click', () => {
+                this.hideRoundPrepPanel();
+                this.placementMode = 'tower';
+                this.showMessage('Click on empty tiles to place towers. You can place up to 5 towers this round.');
+            });
+        }
+        
         // Pause button
         const pauseBtn = document.getElementById('pause-btn');
         if (pauseBtn) {
@@ -68,7 +79,7 @@ class InputSystem {
         const placeTowerBtn = document.getElementById('place-tower-btn');
         if (placeTowerBtn) {
             placeTowerBtn.addEventListener('click', () => {
-                if (window.Game && window.Game.towersPlacedThisRound < 3) { // maxTowersPerRound = 3
+                if (window.Game && window.Game.towersPlacedThisRound < 5) { // maxTowersPerRound = 5
                     this.placementMode = 'tower';
                     this.showMessage('Click on empty tiles to place random towers');
                 } else {
@@ -116,7 +127,9 @@ class InputSystem {
         
         const gridPos = this.grid.worldToGrid(this.mouse.x, this.mouse.y);
         
-        if (this.placementMode === 'tower') {
+        if (this.selectionMode) {
+            this.handleTowerSelection(gridPos.x, gridPos.y);
+        } else if (this.placementMode === 'tower') {
             this.placeTower(gridPos.x, gridPos.y);
         } else {
             this.selectTower(gridPos.x, gridPos.y);
@@ -169,7 +182,7 @@ class InputSystem {
         
         if (window.Game.placeTower(gridX, gridY)) {
             // Tower placed successfully
-            if (window.Game.towersPlacedThisRound >= 3) { // maxTowersPerRound = 3
+            if (window.Game.towersPlacedThisRound >= 5) { // maxTowersPerRound = 5
                 this.cancelPlacement();
             }
         }
@@ -230,17 +243,14 @@ class InputSystem {
         if (!panel || !infoContainer) return;
         
         infoContainer.innerHTML = `
-            <p>You can place up to 3 towers this round.</p>
-            <p>Towers placed: ${window.Game ? window.Game.towersPlacedThisRound : 0}/3</p>
-            <p>Tower types are random when placed.</p>
+            <p><strong>Current Status:</strong></p>
+            <p>Towers placed: ${window.Game ? window.Game.towersPlacedThisRound : 0}/5</p>
+            <p>Click the "Start Building!" button below to begin placing towers.</p>
         `;
         
         panel.classList.remove('hidden');
         
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-            this.hideRoundPrepPanel();
-        }, 3000);
+        // Don't auto-hide this panel - it has a manual play button now
     }
     
     hideRoundPrepPanel() {
@@ -253,6 +263,62 @@ class InputSystem {
     
     handleRoundPrepClick() {
         // Round prep clicks are handled by showing the panel
+    }
+    
+    enterSelectionMode() {
+        this.selectionMode = true;
+        this.placementMode = null;
+        this.showMessage('Click on a glowing tower to see its stats and select it to keep!');
+    }
+    
+    handleTowerSelection(gridX, gridY) {
+        const cell = this.grid.getCell(gridX, gridY);
+        
+        if (cell && cell.type === 'tower' && cell.tower && cell.tower.isNewThisRound) {
+            if (window.Game) {
+                // Show tower info with selection option
+                this.showTowerSelectionInfo(cell.tower);
+            }
+        }
+    }
+    
+    showTowerSelectionInfo(tower) {
+        const info = tower.getInfo();
+        const panel = document.getElementById('tower-info');
+        
+        if (panel) {
+            document.getElementById('tower-name').textContent = this.getTowerDisplayName(info.type);
+            document.getElementById('tower-description').textContent = info.description;
+            
+            const statsDiv = document.getElementById('tower-stats');
+            statsDiv.innerHTML = `
+                <p><strong>Damage:</strong> ${info.damage}</p>
+                <p><strong>Range:</strong> ${info.range.toFixed(1)} tiles</p>
+                <p><strong>Fire Rate:</strong> ${(60 / info.fireRate).toFixed(1)}/sec</p>
+                <p><strong>Type:</strong> ${info.description}</p>
+            `;
+            
+            // Replace action buttons with selection button
+            const actionsDiv = document.getElementById('tower-actions');
+            actionsDiv.innerHTML = `
+                <button id="select-tower-btn" class="primary">✓ Select This Tower</button>
+                <button id="cancel-selection-btn">Cancel</button>
+            `;
+            
+            // Add event listeners for the new buttons
+            document.getElementById('select-tower-btn').addEventListener('click', () => {
+                if (window.Game && window.Game.selectTowerToKeep(tower)) {
+                    this.selectionMode = false;
+                    this.hideTowerInfo();
+                }
+            });
+            
+            document.getElementById('cancel-selection-btn').addEventListener('click', () => {
+                this.hideTowerInfo();
+            });
+            
+            panel.classList.remove('hidden');
+        }
     }
     
     getTowerDisplayName(type) {

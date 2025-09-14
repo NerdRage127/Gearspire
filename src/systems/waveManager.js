@@ -165,7 +165,9 @@ class WaveManager {
             
             // Reset round prep state for next wave
             window.Game.draftCompleted = false;
+            window.Game.inSelectionPhase = false;
             window.Game.towersPlacedThisRound = 0;
+            window.Game.newTowersThisRound = [];
         }
         
         // Notify UI
@@ -174,8 +176,8 @@ class WaveManager {
         }
         
         // Auto-save progress
-        if (window.SaveSystem) {
-            window.SaveSystem.saveGame();
+        if (window.Game && window.Game.saveSystem) {
+            window.Game.saveSystem.saveGame();
         }
     }
     
