@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚙️ Gearspire - Steampunk Tower Defense</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <header>
+            <h1>⚙️ Gearspire</h1>
+            <div id="game-stats">
+                <div class="stat">
+                    <span>Lives: </span><span id="lives">20</span>
+                </div>
+                <div class="stat">
+                    <span>Gold: </span><span id="gold">100</span>
+                </div>
+                <div class="stat">
+                    <span>Wave: </span><span id="wave">1</span>
+                </div>
+                <div class="stat">
+                    <span>Score: </span><span id="score">0</span>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <div id="game-area">
+                <canvas id="game-canvas" width="800" height="480"></canvas>
+                <div id="game-overlay">
+                    <div id="draft-panel" class="hidden">
+                        <h3>Choose Your Tower</h3>
+                        <p>Select 1 tower. The others will become crates for mazing.</p>
+                        <div id="draft-options"></div>
+                    </div>
+                    
+                    <div id="tower-info" class="hidden">
+                        <h4 id="tower-name"></h4>
+                        <p id="tower-description"></p>
+                        <div id="tower-stats"></div>
+                        <div id="tower-actions">
+                            <button id="upgrade-btn">Upgrade</button>
+                            <button id="sell-btn">Sell</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <aside id="game-panel">
+                <div id="controls">
+                    <button id="start-wave-btn" class="primary">Start Wave</button>
+                    <button id="pause-btn">Pause</button>
+                    <button id="place-crate-btn" class="secondary" style="display: none;">Place Crate</button>
+                </div>
+                
+                <div id="tower-info-sidebar">
+                    <h3>Available Towers</h3>
+                    <div id="tower-list">
+                        <!-- Tower info will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div id="targeting-modes">
+                    <h4>Targeting Mode</h4>
+                    <select id="targeting-select">
+                        <option value="first">First</option>
+                        <option value="strongest">Strongest</option>
+                        <option value="closest">Closest</option>
+                        <option value="random">Random</option>
+                    </select>
+                </div>
+            </aside>
+        </main>
+        
+        <footer>
+            <div id="debug-info">
+                <span>FPS: <span id="fps">0</span></span>
+                <span>Enemies: <span id="enemy-count">0</span></span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="src/grid.js"></script>
+    <script src="src/pathfinding.js"></script>
+    <script src="src/entities/projectile.js"></script>
+    <script src="src/entities/creep.js"></script>
+    <script src="src/entities/towers/baseTower.js"></script>
+    <script src="src/entities/towers/steamCannon.js"></script>
+    <script src="src/entities/towers/teslaCoil.js"></script>
+    <script src="src/entities/towers/frostCondenser.js"></script>
+    <script src="src/entities/towers/poisonGasVent.js"></script>
+    <script src="src/entities/towers/gearTurret.js"></script>
+    <script src="src/systems/waveManager.js"></script>
+    <script src="src/systems/input.js"></script>
+    <script src="src/systems/ui.js"></script>
+    <script src="src/systems/save.js"></script>
+    <script src="src/game.js"></script>
+</body>
+</html>
