@@ -52,18 +52,86 @@ class Game {
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         
-        // Try to load saved game
+        // Show intro screen instead of starting immediately
+        this.showIntroScreen();
+        
+        console.log('Gearspire initialized successfully');
+    }
+    
+    showIntroScreen() {
+        const introScreen = document.getElementById('intro-screen');
+        const saveGameCheck = document.getElementById('save-game-check');
+        const saveGameInfo = document.getElementById('save-game-info');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const continueGameBtn = document.getElementById('continue-game-btn');
+        
+        // Check for saved game
         if (this.saveSystem.hasSaveData()) {
             const saveData = this.saveSystem.loadGame();
             if (saveData) {
-                this.showLoadGamePrompt(saveData);
+                // Show save game options
+                saveGameCheck.classList.remove('hidden');
+                continueGameBtn.classList.remove('hidden');
+                
+                saveGameInfo.innerHTML = `
+                    <p><strong>Saved Game Found:</strong></p>
+                    <p>Wave: ${saveData.gameStats.wave}</p>
+                    <p>Score: ${saveData.gameStats.score.toLocaleString()}</p>
+                    <p>Lives: ${saveData.gameStats.lives}</p>
+                `;
             }
+        }
+        
+        // Show intro screen
+        if (introScreen) {
+            introScreen.classList.remove('hidden');
+        }
+        
+        // Set up event listeners
+        if (newGameBtn) {
+            newGameBtn.addEventListener('click', () => {
+                this.startNewGame();
+            });
+        }
+        
+        if (continueGameBtn) {
+            continueGameBtn.addEventListener('click', () => {
+                this.continueGame();
+            });
+        }
+    }
+    
+    startNewGame() {
+        // Clear any saved data if starting new game
+        this.saveSystem.deleteSave();
+        
+        // Hide intro screen
+        const introScreen = document.getElementById('intro-screen');
+        if (introScreen) {
+            introScreen.classList.add('hidden');
         }
         
         // Start game loop
         this.start();
+        this.ui.showMessage('New game started!');
+    }
+    
+    continueGame() {
+        // Load saved game
+        const saveData = this.saveSystem.loadGame();
+        if (saveData) {
+            this.saveSystem.restoreGameState(saveData);
+        }
         
-        console.log('Gearspire initialized successfully');
+        // Hide intro screen
+        const introScreen = document.getElementById('intro-screen');
+        if (introScreen) {
+            introScreen.classList.add('hidden');
+        }
+        
+        // Start game loop
+        this.start();
+        this.ui.showMessage('Game loaded successfully!');
     }
     
     showLoadGamePrompt(saveData) {

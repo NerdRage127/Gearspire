@@ -234,7 +234,7 @@ main {
 
 #tower-info {
     position: absolute;
-    top: 1rem;
+    bottom: 1rem;
     right: 1rem;
     background: rgba(47, 27, 20, 0.95);
     border: 2px solid var(--accent-color);
@@ -443,4 +443,112 @@ footer {
     .stat {
         font-size: 1rem;
     }
+}
+
+/* Intro Screen Styles */
+.intro-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(47, 27, 20, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.intro-panel {
+    background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+    border: 3px solid var(--accent-color);
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.intro-panel h2 {
+    color: var(--accent-color);
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.intro-description {
+    font-size: 1.2rem;
+    color: var(--light-color);
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.intro-content .game-explanation {
+    background: rgba(139, 69, 19, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1.5rem 0;
+    text-align: left;
+}
+
+.intro-content .game-explanation p {
+    margin-bottom: 0.5rem;
+    color: var(--light-color);
+}
+
+.intro-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.primary-btn, .secondary-btn {
+    padding: 1rem 2rem;
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.primary-btn {
+    background: var(--accent-color);
+    color: var(--dark-color);
+    font-weight: bold;
+}
+
+.primary-btn:hover {
+    background: #ffed4e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.secondary-btn {
+    background: var(--secondary-color);
+    color: var(--light-color);
+    border-color: var(--secondary-color);
+}
+
+.secondary-btn:hover {
+    background: var(--accent-color);
+    color: var(--dark-color);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.save-prompt {
+    color: var(--accent-color);
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+#save-game-info {
+    background: rgba(139, 69, 19, 0.3);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    color: var(--light-color);
 }
