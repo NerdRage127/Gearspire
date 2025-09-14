@@ -29,8 +29,8 @@ class WaveManager {
         this.generateSpawnQueue();
         
         // Notify UI
-        if (window.UI) {
-            window.UI.updateWaveDisplay(this.currentWave);
+        if (window.Game && window.Game.ui) {
+            window.Game.ui.updateWaveDisplay(this.currentWave);
         }
         
         return true;
@@ -154,11 +154,14 @@ class WaveManager {
         if (window.Game) {
             window.Game.addGold(bonusGold);
             window.Game.addScore(bonusGold * 5);
+            
+            // Reset draft state for next wave
+            window.Game.draftCompleted = false;
         }
         
         // Notify UI
-        if (window.UI) {
-            window.UI.showWaveComplete(this.currentWave, bonusGold);
+        if (window.Game && window.Game.ui) {
+            window.Game.ui.showWaveComplete(this.currentWave, bonusGold);
         }
         
         // Auto-save progress

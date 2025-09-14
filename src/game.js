@@ -13,12 +13,14 @@ class Game {
         this.isPaused = false;
         this.gameTime = 0;
         this.lastFrameTime = 0;
+        this.draftCompleted = false;
         
         // Game stats
         this.lives = 20;
         this.gold = 100;
         this.score = 0;
         this.maxLives = 20;
+        this.availableCrates = 0;
         
         // Game objects
         this.grid = new Grid(20, 12, 40);
@@ -161,10 +163,10 @@ class Game {
             paused: this.isPaused
         });
         
-        // Check for draft mode
-        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() > 0) {
-            if (!this.inputSystem.isDraftMode()) {
-                this.inputSystem.startDraftMode();
+        // Check for draft mode - start draft before each wave after wave 0
+        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() >= 0) {
+            if (!this.inputSystem.isDraftMode() && !this.draftCompleted) {
+                this.startDraftPhase();
             }
         }
         
@@ -266,6 +268,34 @@ class Game {
         }
     }
     
+    startDraftPhase() {
+        this.draftCompleted = false;
+        this.inputSystem.startDraftMode();
+    }
+    
+    completeDraft(selectedTower, unselectedTowers) {
+        this.draftCompleted = true;
+        
+        // Add crates for unselected towers (they can be placed as walls)
+        this.availableCrates = unselectedTowers.length;
+        this.updateCrateButton();
+        
+        this.ui.showMessage(`Draft complete! ${this.availableCrates} crates available for mazing.`);
+    }
+    
+    updateCrateButton() {
+        const btn = document.getElementById('place-crate-btn');
+        if (btn) {
+            if (this.availableCrates > 0) {
+                btn.style.display = 'block';
+                btn.textContent = `Place Crate (${this.availableCrates})`;
+                btn.disabled = false;
+            } else {
+                btn.style.display = 'none';
+            }
+        }
+    }
+    
     // Game actions
     placeTower(tower, gridX, gridY) {
         if (!this.grid.canPlaceTower(gridX, gridY)) return false;
@@ -296,8 +326,11 @@ class Game {
     
     placeCrate(gridX, gridY) {
         if (!this.grid.canPlaceCrate(gridX, gridY)) return false;
+        if (this.availableCrates <= 0) return false;
         
         this.grid.setCell(gridX, gridY, 'crate');
+        this.availableCrates--;
+        this.updateCrateButton();
         return true;
     }
     
@@ -369,6 +402,8 @@ class Game {
         this.score = 0;
         this.gameTime = 0;
         this.isPaused = false;
+        this.draftCompleted = false;
+        this.availableCrates = 0;
         
         // Clear game objects
         this.towers = [];

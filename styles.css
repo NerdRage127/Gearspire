@@ -190,6 +190,17 @@ main {
     background: #ffed4e;
 }
 
+#controls button.secondary {
+    background: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+#controls button.secondary:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
 #controls button:disabled {
     opacity: 0.5;
     cursor: not-allowed;

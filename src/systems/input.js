@@ -66,7 +66,19 @@ class InputSystem {
             });
         }
         
-        // Tower action buttons
+        // Place crate button
+        const placeCrateBtn = document.getElementById('place-crate-btn');
+        if (placeCrateBtn) {
+            placeCrateBtn.addEventListener('click', () => {
+                if (window.Game && window.Game.availableCrates > 0) {
+                    this.placementMode = 'crate';
+                    this.towerType = null;
+                    this.showMessage('Click to place crate for mazing');
+                } else {
+                    this.showMessage('No crates available');
+                }
+            });
+        }
         const upgradeBtn = document.getElementById('upgrade-btn');
         const sellBtn = document.getElementById('sell-btn');
         
@@ -299,15 +311,16 @@ class InputSystem {
         this.towerType = type;
         this.placementMode = 'tower';
         
-        // Convert other options to crates
-        this.draftOptions.forEach((otherType, i) => {
-            if (i !== index) {
-                // These become available as crates
-            }
-        });
+        // Get unselected tower types for crates
+        const unselectedTowers = this.draftOptions.filter((_, i) => i !== index);
         
         this.hideDraftPanel();
         this.draftMode = false;
+        
+        // Notify game of draft completion
+        if (window.Game) {
+            window.Game.completeDraft(type, unselectedTowers);
+        }
         
         this.showMessage(`Selected ${this.getTowerDisplayName(type)}. Click to place, right-click to cancel.`);
     }
