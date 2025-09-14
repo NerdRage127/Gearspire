@@ -13,12 +13,22 @@ class UI {
             fps: document.getElementById('fps'),
             enemyCount: document.getElementById('enemy-count'),
             startWaveBtn: document.getElementById('start-wave-btn'),
-            pauseBtn: document.getElementById('pause-btn')
+            pauseBtn: document.getElementById('pause-btn'),
+            version: document.getElementById('version')
         };
         
         this.lastFpsUpdate = 0;
         this.frameCount = 0;
         this.currentFps = 0;
+        
+        // Initialize version display
+        this.initializeVersion();
+    }
+    
+    initializeVersion() {
+        if (this.elements.version && window.GameVersion) {
+            this.elements.version.textContent = window.GameVersion.displayVersion;
+        }
     }
     
     update(gameState) {
