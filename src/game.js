@@ -23,7 +23,7 @@ class Game {
         this.availableCrates = 0;
         
         // Game objects
-        this.grid = new Grid(20, 12, 40);
+        this.grid = new Grid(28, 17, 40); // 40% increase: 20*1.4=28, 12*1.4≈17
         this.towers = [];
         this.projectiles = [];
         
@@ -98,8 +98,8 @@ class Game {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Maintain aspect ratio (20:12 grid)
-        const targetAspect = 20 / 12;
+        // Maintain aspect ratio (28:17 grid)
+        const targetAspect = 28 / 17;
         const containerAspect = rect.width / rect.height;
         
         if (containerAspect > targetAspect) {
@@ -410,7 +410,7 @@ class Game {
         this.projectiles = [];
         
         // Reset systems
-        this.grid = new Grid(20, 12, 40);
+        this.grid = new Grid(28, 17, 40);
         this.waveManager.reset();
         this.inputSystem.cancelPlacement();
         

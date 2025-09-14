@@ -171,8 +171,10 @@ class Creep {
         if (this.pathIndex < this.path.length) {
             const nextPoint = this.path[this.pathIndex];
             // Convert grid coordinates to world coordinates
-            this.targetX = nextPoint.x * 40 + 20; // 40 is tile size, 20 is offset to center
-            this.targetY = nextPoint.y * 40 + 20;
+            // Use the game's grid tile size instead of hard-coded value
+            const tileSize = window.Game?.grid?.tileSize || 40;
+            this.targetX = nextPoint.x * tileSize + tileSize / 2;
+            this.targetY = nextPoint.y * tileSize + tileSize / 2;
         }
     }
     
