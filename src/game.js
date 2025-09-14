@@ -13,9 +13,6 @@ class Game {
         this.isPaused = false;
         this.gameTime = 0;
         this.lastFrameTime = 0;
-        this.draftCompleted = false;
-        this.inSelectionPhase = false; // New state for tower selection
-        this.newTowersThisRound = []; // Track newly placed towers for selection
         
         // Game stats
         this.lives = 20;
@@ -34,6 +31,7 @@ class Game {
         this.waveManager = new WaveManager();
         this.inputSystem = new InputSystem(this.canvas, this.grid);
         this.ui = new UI();
+        this.pauseScreen = new PauseScreen();
         this.saveSystem = new SaveSystem();
         
         // Settings
@@ -312,13 +310,6 @@ class Game {
             paused: this.isPaused
         });
         
-        // Check for round prep - start prep before each wave (but not on first initialization)
-        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() > 0) {
-            if (!this.inputSystem.isRoundPrep() && !this.draftCompleted) {
-                this.startRoundPrep();
-            }
-        }
-        
         // Check game over
         if (this.lives <= 0) {
             this.gameOver();
@@ -410,70 +401,7 @@ class Game {
         }
     }
     
-    startRoundPrep() {
-        this.draftCompleted = false;
-        this.inSelectionPhase = false;
-        // Don't reset towersPlacedThisRound if towers were already placed before entering draft
-        // Only reset if starting fresh (no towers placed yet)
-        if (this.towersPlacedThisRound === 0) {
-            this.newTowersThisRound = [];
-        }
-        this.inputSystem.startRoundPrep();
-    }
-    
-    completeRoundPrep() {
-        this.draftCompleted = true;
-        this.inputSystem.hideRoundPrepPanel(); // Hide the draft panel
-        this.ui.showMessage('Round preparation complete! Start the wave when ready.');
-    }
-    
-    enterSelectionPhase() {
-        this.inSelectionPhase = true;
-        this.inputSystem.enterSelectionMode();
-        this.ui.showMessage('Select one tower to keep - click on it to see stats and select it!');
-    }
-    
-    selectTowerToKeep(tower) {
-        if (!this.inSelectionPhase || !tower.isNewThisRound) return false;
-        
-        // Mark the selected tower
-        tower.isSelected = true;
-        tower.isNewThisRound = false; // No longer new, it's chosen
-        
-        // Convert all other new towers to crates
-        this.newTowersThisRound.forEach(newTower => {
-            if (newTower !== tower) {
-                this.convertTowerToCrate(newTower);
-            }
-        });
-        
-        // Clear the new towers list
-        this.newTowersThisRound = [];
-        this.inSelectionPhase = false;
-        this.completeRoundPrep();
-        
-        this.ui.showMessage(`${TowerTypes.getTowerStats(tower.type).name} selected! Other towers converted to crates.`);
-        return true;
-    }
-    
-    convertTowerToCrate(tower) {
-        // Remove tower from towers array
-        const towerIndex = this.towers.indexOf(tower);
-        if (towerIndex !== -1) {
-            this.towers.splice(towerIndex, 1);
-        }
-        
-        // Find tower position in grid and convert to crate
-        for (let y = 0; y < this.grid.height; y++) {
-            for (let x = 0; x < this.grid.width; x++) {
-                const cell = this.grid.getCell(x, y);
-                if (cell && cell.tower === tower) {
-                    this.grid.setCell(x, y, 'crate');
-                    return;
-                }
-            }
-        }
-    }
+
     
     handleBlockedPath() {
         // All paths are blocked - reset the build mode and allow player to try again
@@ -568,19 +496,12 @@ class Game {
     
     // Game state management
     togglePause() {
-        this.isPaused = !this.isPaused;
-        
-        const pauseMenu = document.getElementById('pause-menu');
-        if (this.isPaused) {
-            if (pauseMenu) {
-                pauseMenu.classList.remove('hidden');
-            }
-            this.ui.showMessage('Game paused');
+        if (this.pauseScreen) {
+            this.pauseScreen.togglePause();
         } else {
-            if (pauseMenu) {
-                pauseMenu.classList.add('hidden');
-            }
-            this.ui.showMessage('Game resumed');
+            // Fallback if pause screen not available
+            this.isPaused = !this.isPaused;
+            this.ui.showMessage(this.isPaused ? 'Game paused' : 'Game resumed');
         }
     }
     
@@ -604,7 +525,6 @@ class Game {
         this.score = 0;
         this.gameTime = 0;
         this.isPaused = false;
-        this.draftCompleted = false;
         this.towersPlacedThisRound = 0;
         
         // Clear game objects

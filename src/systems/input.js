@@ -10,7 +10,6 @@ class InputSystem {
         this.mouse = { x: 0, y: 0, down: false };
         this.selectedTower = null;
         this.placementMode = null; // 'tower' only now
-        this.roundPrep = false;
         this.selectionMode = false; // New mode for selecting towers to keep
         
         this.setupEventListeners();
@@ -36,27 +35,9 @@ class InputSystem {
         if (startWaveBtn) {
             startWaveBtn.addEventListener('click', () => {
                 if (window.Game && window.Game.waveManager) {
-                    if (!this.roundPrep) {
-                        // Start round prep for next wave
-                        window.Game.startRoundPrep();
-                    } else if (window.Game.draftCompleted) {
-                        // Draft is complete, start the wave
-                        window.Game.waveManager.startWave();
-                    } else {
-                        // Still in draft phase, show the draft panel
-                        this.showRoundPrepPanel();
-                    }
+                    // Simply start the wave directly
+                    window.Game.waveManager.startWave();
                 }
-            });
-        }
-        
-        // Start draft button (new play button in round prep panel)
-        const startDraftBtn = document.getElementById('start-draft-btn');
-        if (startDraftBtn) {
-            startDraftBtn.addEventListener('click', () => {
-                this.hideRoundPrepPanel();
-                this.placementMode = 'tower';
-                this.showMessage('Click on empty tiles to place towers. You can place up to 5 towers this round.');
             });
         }
         
@@ -69,28 +50,7 @@ class InputSystem {
                 }
             });
         }
-        
-        // Resume button in pause menu
-        const resumeBtn = document.getElementById('resume-btn');
-        if (resumeBtn) {
-            resumeBtn.addEventListener('click', () => {
-                if (window.Game) {
-                    window.Game.togglePause();
-                }
-            });
-        }
-        
-        // Restart button in pause menu (now "New Game")
-        const restartBtn = document.getElementById('restart-btn');
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => {
-                if (window.Game) {
-                    window.Game.restart();
-                }
-            });
-        }
-        
-        // Info button in pause menu
+
         const infoBtn = document.getElementById('info-btn');
         if (infoBtn) {
             infoBtn.addEventListener('click', () => {
@@ -162,8 +122,6 @@ class InputSystem {
             this.handleTowerSelection(gridPos.x, gridPos.y);
         } else if (this.placementMode === 'tower') {
             this.placeTower(gridPos.x, gridPos.y);
-        } else if (this.roundPrep) {
-            this.handleRoundPrepClick();
         } else {
             this.selectTower(gridPos.x, gridPos.y);
         }
@@ -308,40 +266,7 @@ class InputSystem {
         }
     }
     
-    startRoundPrep() {
-        this.roundPrep = true;
-        this.showRoundPrepPanel();
-    }
-    
-    showRoundPrepPanel() {
-        const panel = document.getElementById('draft-panel');
-        const infoContainer = document.getElementById('round-info');
-        
-        if (!panel || !infoContainer) return;
-        
-        infoContainer.innerHTML = `
-            <p><strong>Current Status:</strong></p>
-            <p>Towers placed: ${window.Game ? window.Game.towersPlacedThisRound : 0}/5</p>
-            <p>Click the "Start Building!" button below to begin placing towers.</p>
-        `;
-        
-        panel.classList.remove('hidden');
-        
-        // Don't auto-hide this panel - it has a manual play button now
-    }
-    
-    hideRoundPrepPanel() {
-        const panel = document.getElementById('draft-panel');
-        if (panel) {
-            panel.classList.add('hidden');
-        }
-        // Don't set roundPrep = false here - let it stay active until draft is completed
-        // this.roundPrep = false;
-    }
-    
-    handleRoundPrepClick() {
-        // Round prep clicks are handled by showing the panel
-    }
+
     
     enterSelectionMode() {
         this.selectionMode = true;
@@ -479,10 +404,6 @@ class InputSystem {
     
     isPlacementMode() {
         return this.placementMode !== null;
-    }
-    
-    isRoundPrep() {
-        return this.roundPrep;
     }
 }
 
