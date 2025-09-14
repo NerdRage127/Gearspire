@@ -1,7 +1,21 @@
-# Gearspire
-⚙️ Gearspire
+# ⚙️ Gearspire
 
 A steampunk-inspired endless tower defense game built for the web. Players defend the floating city of Gearspire against waves of sky pirates and rogue automatons using randomly placed mechanical towers and strategic positioning.
+
+## 🚀 Quick Start
+
+1. **Serve the game locally:**
+   ```bash
+   # Using Python (built-in)
+   python3 -m http.server 8000
+   
+   # Using npm (after npm install)
+   npm run serve
+   ```
+
+2. **Open your browser to:** `http://localhost:8000`
+
+3. **Play the game:** Click "New Game" to start your steampunk adventure!
 
 🎮 Gameplay Overview
 
@@ -95,3 +109,46 @@ Enemies start slower and fewer in early waves, gradually increasing in speed and
 - **Path Control**: Block enemy routes while maintaining valid paths
 - **Wave Preparation**: Use the brief prep time between waves wisely
 - **No Resource Management**: Focus purely on tactical decisions
+
+## 🔄 Version Management
+
+Gearspire includes an automated version management system for easy updates:
+
+### Update Version
+```bash
+# Patch release (bug fixes)
+npm run version:patch    # 1.0.3 → 1.0.4
+
+# Minor release (new features)
+npm run version:minor    # 1.0.3 → 1.1.0
+
+# Major release (breaking changes)
+npm run version:major    # 1.0.3 → 2.0.0
+```
+
+### Alternative Methods
+```bash
+# Using Node.js directly
+node scripts/bump-version.js patch
+
+# Using shell script
+./scripts/bump-version.sh patch
+```
+
+The version automatically updates in the game UI footer and maintains save compatibility.
+
+📖 **[Full Version Management Documentation](docs/VERSION_MANAGEMENT.md)**
+
+## 🛠️ Development
+
+### Project Structure
+```
+src/
+  version.js             # Centralized version management
+  game.js               # Main game engine
+  # ... other game files
+scripts/
+  bump-version.js       # Automated version bumping
+docs/
+  VERSION_MANAGEMENT.md # Complete version docs
+```
