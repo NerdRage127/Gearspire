@@ -73,24 +73,68 @@
                                 <h4>Tower Types</h4>
                                 <div id="tower-reference-list">
                                     <div class="tower-reference">
-                                        <h5>Gear Turret</h5>
-                                        <p>Fast, cheap, reliable</p>
+                                        <div class="tower-reference-header">
+                                            <div class="tower-icon gear-turret-icon"></div>
+                                            <h5>Gear Turret</h5>
+                                        </div>
+                                        <p>Fast, cheap, reliable basic damage</p>
+                                        <div class="tower-stats">
+                                            <div class="stat">Damage: 8</div>
+                                            <div class="stat">Range: 2.8</div>
+                                            <div class="stat">Fire Rate: Fast</div>
+                                        </div>
                                     </div>
                                     <div class="tower-reference">
-                                        <h5>Frost Condenser</h5>
-                                        <p>Slows enemies</p>
+                                        <div class="tower-reference-header">
+                                            <div class="tower-icon frost-condenser-icon"></div>
+                                            <h5>Frost Condenser</h5>
+                                        </div>
+                                        <p>Chilled bursts that slow enemies</p>
+                                        <div class="tower-stats">
+                                            <div class="stat">Damage: 12</div>
+                                            <div class="stat">Range: 2.5</div>
+                                            <div class="stat">Fire Rate: Medium</div>
+                                            <div class="stat">Special: Slows enemies</div>
+                                        </div>
                                     </div>
                                     <div class="tower-reference">
-                                        <h5>Steam Cannon</h5>
-                                        <p>AoE splash damage</p>
+                                        <div class="tower-reference-header">
+                                            <div class="tower-icon steam-cannon-icon"></div>
+                                            <h5>Steam Cannon</h5>
+                                        </div>
+                                        <p>AoE splash damage with slow fire rate</p>
+                                        <div class="tower-stats">
+                                            <div class="stat">Damage: 25</div>
+                                            <div class="stat">Range: 2.8</div>
+                                            <div class="stat">Fire Rate: Slow</div>
+                                            <div class="stat">Special: Area damage</div>
+                                        </div>
                                     </div>
                                     <div class="tower-reference">
-                                        <h5>Tesla Coil</h5>
-                                        <p>Chain lightning</p>
+                                        <div class="tower-reference-header">
+                                            <div class="tower-icon tesla-coil-icon"></div>
+                                            <h5>Tesla Coil</h5>
+                                        </div>
+                                        <p>Chain lightning between enemies</p>
+                                        <div class="tower-stats">
+                                            <div class="stat">Damage: 15</div>
+                                            <div class="stat">Range: 3.0</div>
+                                            <div class="stat">Fire Rate: Medium</div>
+                                            <div class="stat">Special: Chain lightning</div>
+                                        </div>
                                     </div>
                                     <div class="tower-reference">
-                                        <h5>Poison Gas Vent</h5>
-                                        <p>Poison damage over time</p>
+                                        <div class="tower-reference-header">
+                                            <div class="tower-icon poison-gas-vent-icon"></div>
+                                            <h5>Poison Gas Vent</h5>
+                                        </div>
+                                        <p>Poison damage over time clouds</p>
+                                        <div class="tower-stats">
+                                            <div class="stat">Damage: 8</div>
+                                            <div class="stat">Range: 2.2</div>
+                                            <div class="stat">Fire Rate: Slow</div>
+                                            <div class="stat">Special: Poison DoT</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -101,24 +145,7 @@
                         </div>
                     </div>
                     
-                    <div id="tower-info" class="hidden">
-                        <h4 id="tower-name"></h4>
-                        <p id="tower-description"></p>
-                        <div id="tower-stats"></div>
-                        <div id="tower-targeting">
-                            <label for="targeting-select">Targeting Mode:</label>
-                            <select id="targeting-select">
-                                <option value="first">First</option>
-                                <option value="strongest">Strongest</option>
-                                <option value="closest">Closest</option>
-                                <option value="random">Random</option>
-                            </select>
-                        </div>
-                        <div id="tower-actions">
-                            <button id="upgrade-btn">Upgrade</button>
-                            <button id="sell-btn">Sell</button>
-                        </div>
-                    </div>
+
                 </div>
             </div>
             
@@ -127,6 +154,25 @@
                     <button id="start-wave-btn" class="primary">Start Wave</button>
                     <button id="pause-btn">Pause</button>
                     <button id="place-tower-btn" class="secondary">Place Tower</button>
+                </div>
+                
+                <div id="tower-info" class="hidden">
+                    <h4 id="tower-name"></h4>
+                    <p id="tower-description"></p>
+                    <div id="tower-stats"></div>
+                    <div id="tower-targeting">
+                        <label for="targeting-select">Targeting Mode:</label>
+                        <select id="targeting-select">
+                            <option value="first">First</option>
+                            <option value="strongest">Strongest</option>
+                            <option value="closest">Closest</option>
+                            <option value="random">Random</option>
+                        </select>
+                    </div>
+                    <div id="tower-actions">
+                        <button id="upgrade-btn">Upgrade</button>
+                        <button id="sell-btn">Sell</button>
+                    </div>
                 </div>
             </aside>
         </main>
