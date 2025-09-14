@@ -125,17 +125,14 @@ class InputSystem {
     }
     
     handleLeftClick() {
-        if (this.roundPrep) {
-            this.handleRoundPrepClick();
-            return;
-        }
-        
         const gridPos = this.grid.worldToGrid(this.mouse.x, this.mouse.y);
         
         if (this.selectionMode) {
             this.handleTowerSelection(gridPos.x, gridPos.y);
         } else if (this.placementMode === 'tower') {
             this.placeTower(gridPos.x, gridPos.y);
+        } else if (this.roundPrep) {
+            this.handleRoundPrepClick();
         } else {
             this.selectTower(gridPos.x, gridPos.y);
         }
