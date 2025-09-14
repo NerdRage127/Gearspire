@@ -70,6 +70,26 @@ class InputSystem {
             });
         }
         
+        // Resume button in pause menu
+        const resumeBtn = document.getElementById('resume-btn');
+        if (resumeBtn) {
+            resumeBtn.addEventListener('click', () => {
+                if (window.Game) {
+                    window.Game.togglePause();
+                }
+            });
+        }
+        
+        // Restart button in pause menu
+        const restartBtn = document.getElementById('restart-btn');
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                if (window.Game) {
+                    location.reload(); // Simple restart by reloading the page
+                }
+            });
+        }
+        
         // Targeting mode selector
         const targetingSelect = document.getElementById('targeting-select');
         if (targetingSelect) {

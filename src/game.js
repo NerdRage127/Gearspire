@@ -398,9 +398,16 @@ class Game {
     togglePause() {
         this.isPaused = !this.isPaused;
         
+        const pauseMenu = document.getElementById('pause-menu');
         if (this.isPaused) {
+            if (pauseMenu) {
+                pauseMenu.classList.remove('hidden');
+            }
             this.ui.showMessage('Game paused');
         } else {
+            if (pauseMenu) {
+                pauseMenu.classList.add('hidden');
+            }
             this.ui.showMessage('Game resumed');
         }
     }
