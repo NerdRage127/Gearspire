@@ -103,7 +103,7 @@ main {
     border-radius: 12px;
     padding: 2rem;
     text-align: center;
-    max-width: 600px;
+    max-width: 700px;
     pointer-events: auto;
 }
 
@@ -111,6 +111,44 @@ main {
     color: var(--accent-color);
     margin-bottom: 1rem;
     font-size: 1.5rem;
+}
+
+.game-explanation {
+    background: rgba(139, 69, 19, 0.3);
+    border: 1px solid var(--secondary-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    text-align: left;
+}
+
+.game-explanation p {
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.game-explanation strong {
+    color: var(--accent-color);
+}
+
+.play-button {
+    background: var(--success-color);
+    color: white;
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1rem;
+}
+
+.play-button:hover {
+    background: var(--accent-color);
+    color: var(--dark-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 #draft-options {

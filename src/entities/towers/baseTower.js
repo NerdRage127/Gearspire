@@ -183,6 +183,25 @@ class BaseTower {
     render(ctx, tileSize = 40) {
         ctx.save();
         
+        // Draw glowing box for new towers
+        if (this.isNewThisRound) {
+            const glowIntensity = (Math.sin((this.glowAnimation || 0) * 0.1) + 1) * 0.5;
+            const alpha = 0.3 + (glowIntensity * 0.4);
+            
+            ctx.strokeStyle = `rgba(255, 215, 0, ${alpha})`;
+            ctx.lineWidth = 3 + (glowIntensity * 2);
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.rect(
+                this.x - tileSize/2, 
+                this.y - tileSize/2, 
+                tileSize, 
+                tileSize
+            );
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
         // Draw range indicator if selected
         if (this.showRange) {
             ctx.strokeStyle = 'rgba(255, 215, 0, 0.3)';
