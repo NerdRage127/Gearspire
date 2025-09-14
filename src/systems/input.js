@@ -250,11 +250,13 @@ class InputSystem {
             // Remove tower from grid
             if (window.Game) {
                 window.Game.removeTower(this.selectedTower);
+                // Give back 1 gear for selling a tower (not crates)
+                window.Game.addGears(1);
             }
             
             this.selectedTower = null;
             this.hideTowerInfo();
-            this.showMessage(`Tower sold for ${sellValue} gold`);
+            this.showMessage(`Tower sold for 1 gear`);
         }
     }
     
