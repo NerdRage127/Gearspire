@@ -43,10 +43,54 @@
                         <button id="start-draft-btn" class="play-button">🎮 Start Building!</button>
                     </div>
                     
+                    <div id="pause-menu" class="hidden">
+                        <div class="pause-menu-content">
+                            <h3>⏸️ Game Paused</h3>
+                            <div id="tower-info-reference">
+                                <h4>Tower Types</h4>
+                                <div id="tower-reference-list">
+                                    <div class="tower-reference">
+                                        <h5>Gear Turret</h5>
+                                        <p>Fast, cheap, reliable</p>
+                                    </div>
+                                    <div class="tower-reference">
+                                        <h5>Frost Condenser</h5>
+                                        <p>Slows enemies</p>
+                                    </div>
+                                    <div class="tower-reference">
+                                        <h5>Steam Cannon</h5>
+                                        <p>AoE splash damage</p>
+                                    </div>
+                                    <div class="tower-reference">
+                                        <h5>Tesla Coil</h5>
+                                        <p>Chain lightning</p>
+                                    </div>
+                                    <div class="tower-reference">
+                                        <h5>Poison Gas Vent</h5>
+                                        <p>Poison damage over time</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pause-menu-actions">
+                                <button id="resume-btn" class="primary">Resume Game</button>
+                                <button id="restart-btn">Restart</button>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div id="tower-info" class="hidden">
                         <h4 id="tower-name"></h4>
                         <p id="tower-description"></p>
                         <div id="tower-stats"></div>
+                        <div id="tower-targeting">
+                            <label for="targeting-select">Targeting Mode:</label>
+                            <select id="targeting-select">
+                                <option value="first">First</option>
+                                <option value="strongest">Strongest</option>
+                                <option value="closest">Closest</option>
+                                <option value="random">Random</option>
+                            </select>
+                        </div>
                         <div id="tower-actions">
                             <button id="upgrade-btn">Upgrade</button>
                             <button id="sell-btn">Sell</button>
@@ -60,42 +104,6 @@
                     <button id="start-wave-btn" class="primary">Start Wave</button>
                     <button id="pause-btn">Pause</button>
                     <button id="place-tower-btn" class="secondary">Place Tower</button>
-                </div>
-                
-                <div id="tower-info-sidebar">
-                    <h3>Tower Types</h3>
-                    <div id="tower-list">
-                        <div>
-                            <h5>Gear Turret</h5>
-                            <p>Fast, cheap, reliable</p>
-                        </div>
-                        <div>
-                            <h5>Frost Condenser</h5>
-                            <p>Slows enemies</p>
-                        </div>
-                        <div>
-                            <h5>Steam Cannon</h5>
-                            <p>AoE splash damage</p>
-                        </div>
-                        <div>
-                            <h5>Tesla Coil</h5>
-                            <p>Chain lightning</p>
-                        </div>
-                        <div>
-                            <h5>Poison Gas Vent</h5>
-                            <p>Poison damage over time</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="targeting-modes">
-                    <h4>Targeting Mode</h4>
-                    <select id="targeting-select">
-                        <option value="first">First</option>
-                        <option value="strongest">Strongest</option>
-                        <option value="closest">Closest</option>
-                        <option value="random">Random</option>
-                    </select>
                 </div>
             </aside>
         </main>

@@ -166,8 +166,8 @@ class Game {
             paused: this.isPaused
         });
         
-        // Check for round prep - start prep before each wave
-        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() >= 0) {
+        // Check for round prep - start prep before each wave (but not on first initialization)
+        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() > 0) {
             if (!this.inputSystem.isRoundPrep() && !this.draftCompleted) {
                 this.startRoundPrep();
             }
@@ -398,9 +398,16 @@ class Game {
     togglePause() {
         this.isPaused = !this.isPaused;
         
+        const pauseMenu = document.getElementById('pause-menu');
         if (this.isPaused) {
+            if (pauseMenu) {
+                pauseMenu.classList.remove('hidden');
+            }
             this.ui.showMessage('Game paused');
         } else {
+            if (pauseMenu) {
+                pauseMenu.classList.add('hidden');
+            }
             this.ui.showMessage('Game resumed');
         }
     }

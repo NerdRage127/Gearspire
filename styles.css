@@ -113,6 +113,63 @@ main {
     font-size: 1.5rem;
 }
 
+#pause-menu {
+    background: rgba(47, 27, 20, 0.95);
+    border: 3px solid var(--accent-color);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 600px;
+    pointer-events: auto;
+}
+
+.pause-menu-content h3 {
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+}
+
+#tower-info-reference {
+    text-align: left;
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+#tower-info-reference h4 {
+    color: var(--accent-color);
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.tower-reference {
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border-bottom: 1px solid var(--secondary-color);
+}
+
+.tower-reference:last-child {
+    border-bottom: none;
+}
+
+.tower-reference h5 {
+    color: var(--accent-color);
+    margin-bottom: 0.25rem;
+}
+
+.tower-reference p {
+    color: var(--light-color);
+    font-size: 0.9rem;
+}
+
+.pause-menu-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
 .game-explanation {
     background: rgba(139, 69, 19, 0.3);
     border: 1px solid var(--secondary-color);
@@ -187,6 +244,28 @@ main {
     pointer-events: auto;
 }
 
+#tower-targeting {
+    margin: 1rem 0;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--secondary-color);
+}
+
+#tower-targeting label {
+    display: block;
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+#tower-targeting select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--secondary-color);
+    border-radius: 4px;
+    background: var(--dark-color);
+    color: var(--light-color);
+}
+
 #game-panel {
     width: 300px;
     background: var(--dark-color);
@@ -242,14 +321,6 @@ main {
 #controls button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
-}
-
-#tower-info-sidebar h3,
-#targeting-modes h4 {
-    color: var(--accent-color);
-    margin-bottom: 1rem;
-    border-bottom: 1px solid var(--secondary-color);
-    padding-bottom: 0.5rem;
 }
 
 .tower-card {

@@ -36,10 +36,15 @@ class InputSystem {
         if (startWaveBtn) {
             startWaveBtn.addEventListener('click', () => {
                 if (window.Game && window.Game.waveManager) {
-                    if (this.roundPrep) {
-                        this.showRoundPrepPanel();
-                    } else {
+                    if (!this.roundPrep) {
+                        // Start round prep for next wave
+                        window.Game.startRoundPrep();
+                    } else if (window.Game.draftCompleted) {
+                        // Draft is complete, start the wave
                         window.Game.waveManager.startWave();
+                    } else {
+                        // Still in draft phase, show the draft panel
+                        this.showRoundPrepPanel();
                     }
                 }
             });
@@ -61,6 +66,26 @@ class InputSystem {
             pauseBtn.addEventListener('click', () => {
                 if (window.Game) {
                     window.Game.togglePause();
+                }
+            });
+        }
+        
+        // Resume button in pause menu
+        const resumeBtn = document.getElementById('resume-btn');
+        if (resumeBtn) {
+            resumeBtn.addEventListener('click', () => {
+                if (window.Game) {
+                    window.Game.togglePause();
+                }
+            });
+        }
+        
+        // Restart button in pause menu
+        const restartBtn = document.getElementById('restart-btn');
+        if (restartBtn) {
+            restartBtn.addEventListener('click', () => {
+                if (window.Game) {
+                    location.reload(); // Simple restart by reloading the page
                 }
             });
         }
@@ -120,17 +145,14 @@ class InputSystem {
     }
     
     handleLeftClick() {
-        if (this.roundPrep) {
-            this.handleRoundPrepClick();
-            return;
-        }
-        
         const gridPos = this.grid.worldToGrid(this.mouse.x, this.mouse.y);
         
         if (this.selectionMode) {
             this.handleTowerSelection(gridPos.x, gridPos.y);
         } else if (this.placementMode === 'tower') {
             this.placeTower(gridPos.x, gridPos.y);
+        } else if (this.roundPrep) {
+            this.handleRoundPrepClick();
         } else {
             this.selectTower(gridPos.x, gridPos.y);
         }
