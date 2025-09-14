@@ -6,7 +6,7 @@
 const GameVersion = {
     major: 1,
     minor: 0,
-    patch: 3,
+    patch: 4,
     
     get version() {
         return `${this.major}.${this.minor}.${this.patch}`;
