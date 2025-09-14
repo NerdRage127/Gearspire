@@ -45,7 +45,7 @@ class SaveSystem {
         
         // Save basic game state
         const saveData = {
-            version: '1.0.0',
+            version: window.GameVersion ? window.GameVersion.version : '1.0.0',
             timestamp: Date.now(),
             gameStats: {
                 lives: game.lives,
