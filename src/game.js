@@ -166,8 +166,8 @@ class Game {
             paused: this.isPaused
         });
         
-        // Check for round prep - start prep before each wave
-        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() >= 0) {
+        // Check for round prep - start prep before each wave (but not on first initialization)
+        if (!this.waveManager.isWaveInProgress() && this.waveManager.getCurrentWave() > 0) {
             if (!this.inputSystem.isRoundPrep() && !this.draftCompleted) {
                 this.startRoundPrep();
             }

@@ -36,10 +36,15 @@ class InputSystem {
         if (startWaveBtn) {
             startWaveBtn.addEventListener('click', () => {
                 if (window.Game && window.Game.waveManager) {
-                    if (this.roundPrep) {
-                        this.showRoundPrepPanel();
-                    } else {
+                    if (!this.roundPrep) {
+                        // Start round prep for next wave
+                        window.Game.startRoundPrep();
+                    } else if (window.Game.draftCompleted) {
+                        // Draft is complete, start the wave
                         window.Game.waveManager.startWave();
+                    } else {
+                        // Still in draft phase, show the draft panel
+                        this.showRoundPrepPanel();
                     }
                 }
             });
