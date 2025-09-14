@@ -120,9 +120,23 @@ class Creep {
             return effect.alive;
         });
         
-        // Check if reached end
+        // Check if reached end - must be close to actual home point
         if (this.pathIndex >= this.path.length) {
-            this.reachedEnd = true;
+            // Additional check: enemy must be within reasonable distance of home point
+            const grid = window.Game?.grid;
+            if (grid) {
+                const homePoint = grid.gridToWorld(grid.pathEnd.x, grid.pathEnd.y);
+                const distanceToHome = Math.sqrt(
+                    (this.x - homePoint.x) ** 2 + (this.y - homePoint.y) ** 2
+                );
+                // Only count as reached if within half a tile of the home point
+                if (distanceToHome <= (grid.tileSize / 2)) {
+                    this.reachedEnd = true;
+                }
+            } else {
+                // Fallback to old behavior if grid not available
+                this.reachedEnd = true;
+            }
         }
     }
     

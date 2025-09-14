@@ -234,9 +234,9 @@ class Grid {
             }
         }
         
-        // Highlight start and end points
-        this.renderPathPoint(ctx, this.pathStart, '#00ff00');
-        this.renderPathPoint(ctx, this.pathEnd, '#ff0000');
+        // Render start and end points with better visuals
+        this.renderSpawnPoint(ctx, this.pathStart);
+        this.renderHomePoint(ctx, this.pathEnd);
         
         ctx.restore();
     }
@@ -244,7 +244,7 @@ class Grid {
     getCellColor(cell) {
         switch (cell.type) {
             case 'path':
-                return 'rgba(139, 69, 19, 0.3)';
+                return 'rgba(47, 27, 20, 0.1)'; // Same as empty to hide the stripe
             case 'tower':
                 return 'rgba(34, 139, 34, 0.3)';
             case 'crate':
@@ -280,12 +280,78 @@ class Grid {
         ctx.strokeRect(x - size/2, y - size/2, size, size);
     }
     
-    renderPathPoint(ctx, point, color) {
+    renderSpawnPoint(ctx, point) {
         const worldPos = this.gridToWorld(point.x, point.y);
-        ctx.fillStyle = color;
+        
+        // Draw no-build zone circle (light orange, semi-transparent)
+        ctx.strokeStyle = 'rgba(255, 165, 0, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath();
+        ctx.arc(worldPos.x, worldPos.y, this.tileSize * 1.5, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]); // Reset line dash
+        
+        // Draw spawn portal/gate icon
+        ctx.fillStyle = '#4a90e2'; // Blue color
+        ctx.beginPath();
+        ctx.arc(worldPos.x, worldPos.y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add inner circle for portal effect
+        ctx.fillStyle = '#87ceeb'; // Light blue
         ctx.beginPath();
         ctx.arc(worldPos.x, worldPos.y, 8, 0, Math.PI * 2);
         ctx.fill();
+        
+        // Add swirling effect lines
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        const time = Date.now() * 0.005;
+        for (let i = 0; i < 3; i++) {
+            const angle = (i * Math.PI * 2 / 3) + time;
+            const x1 = worldPos.x + Math.cos(angle) * 4;
+            const y1 = worldPos.y + Math.sin(angle) * 4;
+            const x2 = worldPos.x + Math.cos(angle + 0.5) * 6;
+            const y2 = worldPos.y + Math.sin(angle + 0.5) * 6;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+    }
+    
+    renderHomePoint(ctx, point) {
+        const worldPos = this.gridToWorld(point.x, point.y);
+        
+        // Draw hit box circle (red, semi-transparent)
+        ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(worldPos.x, worldPos.y, this.tileSize / 2, 0, Math.PI * 2);
+        ctx.stroke();
+        
+        // Draw home base icon
+        ctx.fillStyle = '#8b4513'; // Brown for base
+        ctx.fillRect(worldPos.x - 10, worldPos.y - 5, 20, 10);
+        
+        // Draw flag pole
+        ctx.fillStyle = '#654321'; // Dark brown
+        ctx.fillRect(worldPos.x + 8, worldPos.y - 15, 2, 20);
+        
+        // Draw flag
+        ctx.fillStyle = '#ff0000'; // Red flag
+        ctx.beginPath();
+        ctx.moveTo(worldPos.x + 10, worldPos.y - 15);
+        ctx.lineTo(worldPos.x + 20, worldPos.y - 10);
+        ctx.lineTo(worldPos.x + 10, worldPos.y - 5);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Add some detail to the base
+        ctx.strokeStyle = '#654321';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(worldPos.x - 10, worldPos.y - 5, 20, 10);
     }
 }
 
