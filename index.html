@@ -30,7 +30,7 @@
             <div id="game-area">
                 <canvas id="game-canvas" width="800" height="480"></canvas>
                 <div id="game-overlay">
-                    <div id="intro-screen" class="intro-overlay">
+                    <div id="intro-screen" class="intro-overlay hidden" style="display: none;">
                         <div class="intro-panel">
                             <h2>⚙️ Welcome to Gearspire</h2>
                             <div class="intro-content">
@@ -69,78 +69,10 @@
                     <div id="pause-menu" class="hidden">
                         <div class="pause-menu-content">
                             <h3>⏸️ Game Paused</h3>
-                            <div id="tower-info-reference">
-                                <h4>Tower Types</h4>
-                                <div id="tower-reference-list">
-                                    <div class="tower-reference">
-                                        <div class="tower-reference-header">
-                                            <div class="tower-icon gear-turret-icon"></div>
-                                            <h5>Gear Turret</h5>
-                                        </div>
-                                        <p>Fast, cheap, reliable basic damage</p>
-                                        <div class="tower-stats">
-                                            <div class="stat">Damage: 8</div>
-                                            <div class="stat">Range: 2.8</div>
-                                            <div class="stat">Fire Rate: Fast</div>
-                                        </div>
-                                    </div>
-                                    <div class="tower-reference">
-                                        <div class="tower-reference-header">
-                                            <div class="tower-icon frost-condenser-icon"></div>
-                                            <h5>Frost Condenser</h5>
-                                        </div>
-                                        <p>Chilled bursts that slow enemies</p>
-                                        <div class="tower-stats">
-                                            <div class="stat">Damage: 12</div>
-                                            <div class="stat">Range: 2.5</div>
-                                            <div class="stat">Fire Rate: Medium</div>
-                                            <div class="stat">Special: Slows enemies</div>
-                                        </div>
-                                    </div>
-                                    <div class="tower-reference">
-                                        <div class="tower-reference-header">
-                                            <div class="tower-icon steam-cannon-icon"></div>
-                                            <h5>Steam Cannon</h5>
-                                        </div>
-                                        <p>AoE splash damage with slow fire rate</p>
-                                        <div class="tower-stats">
-                                            <div class="stat">Damage: 25</div>
-                                            <div class="stat">Range: 2.8</div>
-                                            <div class="stat">Fire Rate: Slow</div>
-                                            <div class="stat">Special: Area damage</div>
-                                        </div>
-                                    </div>
-                                    <div class="tower-reference">
-                                        <div class="tower-reference-header">
-                                            <div class="tower-icon tesla-coil-icon"></div>
-                                            <h5>Tesla Coil</h5>
-                                        </div>
-                                        <p>Chain lightning between enemies</p>
-                                        <div class="tower-stats">
-                                            <div class="stat">Damage: 15</div>
-                                            <div class="stat">Range: 3.0</div>
-                                            <div class="stat">Fire Rate: Medium</div>
-                                            <div class="stat">Special: Chain lightning</div>
-                                        </div>
-                                    </div>
-                                    <div class="tower-reference">
-                                        <div class="tower-reference-header">
-                                            <div class="tower-icon poison-gas-vent-icon"></div>
-                                            <h5>Poison Gas Vent</h5>
-                                        </div>
-                                        <p>Poison damage over time clouds</p>
-                                        <div class="tower-stats">
-                                            <div class="stat">Damage: 8</div>
-                                            <div class="stat">Range: 2.2</div>
-                                            <div class="stat">Fire Rate: Slow</div>
-                                            <div class="stat">Special: Poison DoT</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                             <div class="pause-menu-actions">
                                 <button id="resume-btn" class="primary">Resume Game</button>
-                                <button id="restart-btn">Restart</button>
+                                <button id="restart-btn">New Game</button>
+                                <button id="info-btn" class="secondary">Info</button>
                             </div>
                         </div>
                     </div>

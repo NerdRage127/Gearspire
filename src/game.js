@@ -52,10 +52,29 @@ class Game {
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         
-        // Show intro screen instead of starting immediately
-        this.showIntroScreen();
+        // Auto-load previous game or start new game (no welcome screen)
+        this.autoStartGame();
         
         console.log('Gearspire initialized successfully');
+    }
+    
+    autoStartGame() {
+        // Check for saved game and auto-load it, otherwise start new game
+        if (this.saveSystem.hasSaveData()) {
+            const saveData = this.saveSystem.loadGame();
+            if (saveData) {
+                this.saveSystem.restoreGameState(saveData);
+                this.start();
+                this.ui.showMessage('Previous game loaded automatically!');
+                console.log('Auto-loaded previous game');
+                return;
+            }
+        }
+        
+        // No save data, start new game
+        this.start();
+        this.ui.showMessage('New game started!');
+        console.log('Started new game');
     }
     
     /**
@@ -603,8 +622,14 @@ class Game {
             overlay.remove();
         }
         
-        // Ensure intro screen is hidden
-        this.hideIntroScreen();
+        // Clear save data to start truly fresh
+        this.saveSystem.deleteSave();
+        
+        // Ensure pause menu is hidden
+        const pauseMenu = document.getElementById('pause-menu');
+        if (pauseMenu) {
+            pauseMenu.classList.add('hidden');
+        }
         
         // Restart game
         this.isPlaying = true;
@@ -613,31 +638,8 @@ class Game {
     }
     
     returnToMenu() {
-        // Reset everything and show intro screen
-        this.isPlaying = false;
-        this.isPaused = false;
-        
-        // Clear save data
-        this.saveSystem.deleteSave();
-        
-        // Remove any overlays
-        const gameOverOverlay = document.querySelector('.game-over-overlay');
-        if (gameOverOverlay) {
-            gameOverOverlay.remove();
-        }
-        
-        // Reset game state
-        this.lives = this.maxLives;
-        this.score = 0;
-        this.gameTime = 0;
-        this.draftCompleted = false;
-        this.towersPlacedThisRound = 0;
-        this.towers = [];
-        this.projectiles = [];
-        
-        // Show intro screen
-        this.showIntroScreen();
-        this.ui.showMessage('Returned to main menu');
+        // Instead of showing intro screen, just restart the game
+        this.restart();
     }
     
     // Utility methods

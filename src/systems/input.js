@@ -80,12 +80,23 @@ class InputSystem {
             });
         }
         
-        // Restart button in pause menu
+        // Restart button in pause menu (now "New Game")
         const restartBtn = document.getElementById('restart-btn');
         if (restartBtn) {
             restartBtn.addEventListener('click', () => {
                 if (window.Game) {
-                    location.reload(); // Simple restart by reloading the page
+                    window.Game.restart();
+                }
+            });
+        }
+        
+        // Info button in pause menu
+        const infoBtn = document.getElementById('info-btn');
+        if (infoBtn) {
+            infoBtn.addEventListener('click', () => {
+                // Placeholder for future tech tree implementation
+                if (window.Game && window.Game.ui) {
+                    window.Game.ui.showMessage('Tech tree coming soon!');
                 }
             });
         }
