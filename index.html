@@ -30,6 +30,29 @@
             <div id="game-area">
                 <canvas id="game-canvas" width="800" height="480"></canvas>
                 <div id="game-overlay">
+                    <div id="intro-screen" class="intro-overlay">
+                        <div class="intro-panel">
+                            <h2>⚙️ Welcome to Gearspire</h2>
+                            <div class="intro-content">
+                                <p class="intro-description">A Steampunk Tower Defense Adventure</p>
+                                <div class="game-explanation">
+                                    <p>🏗️ <strong>Build Phase:</strong> Place up to 5 random towers on the battlefield</p>
+                                    <p>⚡ <strong>Draft Phase:</strong> Choose which tower to keep - others become blocking crates</p>
+                                    <p>⚔️ <strong>Battle Phase:</strong> Your tower defends against enemy waves</p>
+                                    <p>💡 <strong>Strategy:</strong> Plan your maze with crates and position your chosen tower wisely!</p>
+                                </div>
+                                <div id="save-game-check" class="hidden">
+                                    <p class="save-prompt">Continue previous game or start fresh?</p>
+                                    <div id="save-game-info"></div>
+                                </div>
+                                <div class="intro-actions">
+                                    <button id="new-game-btn" class="primary-btn">🎮 New Game</button>
+                                    <button id="continue-game-btn" class="secondary-btn hidden">📋 Continue Game</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="draft-panel" class="hidden">
                         <h3>🎯 Round Starting - Tower Draft Phase</h3>
                         <div class="game-explanation">
