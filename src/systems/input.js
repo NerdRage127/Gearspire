@@ -165,7 +165,21 @@ class InputSystem {
     handleKeyDown(e) {
         switch (e.key) {
             case 'Escape':
-                this.cancelPlacement();
+                // First priority: try to hide intro screen if it's visible
+                const introScreen = document.getElementById('intro-screen');
+                if (introScreen && !introScreen.classList.contains('hidden')) {
+                    console.log('Escape key pressed - hiding intro screen');
+                    if (window.Game && window.Game.hideIntroScreen) {
+                        window.Game.hideIntroScreen();
+                        // Auto-start new game if no save data exists
+                        if (window.Game.saveSystem && !window.Game.saveSystem.hasSaveData()) {
+                            window.Game.startNewGame();
+                        }
+                    }
+                } else {
+                    // Normal escape behavior - cancel placement
+                    this.cancelPlacement();
+                }
                 break;
             case 'Delete':
             case 'Backspace':
@@ -196,6 +210,29 @@ class InputSystem {
             case 'P':
                 if (window.Game) {
                     window.Game.togglePause();
+                }
+                break;
+            case 'r':
+            case 'R':
+                // Emergency restart shortcut (Ctrl+R or Shift+R)
+                if (e.ctrlKey || e.shiftKey) {
+                    e.preventDefault();
+                    console.log('Emergency restart triggered via keyboard shortcut');
+                    if (window.Game) {
+                        window.Game.hideIntroScreen();
+                        window.Game.restart();
+                    }
+                }
+                break;
+            case 'm':
+            case 'M':
+                // Return to menu shortcut (Ctrl+M)
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    console.log('Return to menu triggered via keyboard shortcut');
+                    if (window.Game) {
+                        window.Game.returnToMenu();
+                    }
                 }
                 break;
         }
