@@ -267,8 +267,11 @@ class Game {
     startRoundPrep() {
         this.draftCompleted = false;
         this.inSelectionPhase = false;
-        this.towersPlacedThisRound = 0;
-        this.newTowersThisRound = [];
+        // Don't reset towersPlacedThisRound if towers were already placed before entering draft
+        // Only reset if starting fresh (no towers placed yet)
+        if (this.towersPlacedThisRound === 0) {
+            this.newTowersThisRound = [];
+        }
         this.inputSystem.startRoundPrep();
     }
     
@@ -326,6 +329,24 @@ class Game {
         }
     }
     
+    handleBlockedPath() {
+        // All paths are blocked - reset the build mode and allow player to try again
+        this.ui.showMessage('All paths blocked! Removing newly placed towers. Try a different maze layout.');
+        
+        // Remove all newly placed towers from this round
+        this.newTowersThisRound.forEach(tower => {
+            this.removeTower(tower);
+        });
+        
+        // Reset round state
+        this.newTowersThisRound = [];
+        this.towersPlacedThisRound = 0;
+        this.inSelectionPhase = false;
+        
+        // Allow player to try building again
+        this.ui.showMessage('Build mode reset. You can now place towers again. Make sure to leave a path for enemies!');
+    }
+
     // Game actions
     placeTower(gridX, gridY) {
         if (!this.grid.canPlaceTower(gridX, gridY)) return false;
@@ -348,8 +369,13 @@ class Game {
         
         this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/5)`);
         
-        // If we've placed max towers for this round, enter selection phase
+        // If we've placed max towers for this round, check pathfinding and enter selection phase
         if (this.towersPlacedThisRound >= 5) { // maxTowersPerRound = 5
+            // Check if enemies still have a valid path to home
+            if (!this.grid.hasValidPath()) {
+                this.handleBlockedPath();
+                return true;
+            }
             this.enterSelectionPhase();
         }
         
