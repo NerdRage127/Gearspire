@@ -179,6 +179,13 @@ class InputSystem {
                     this.upgradeTower();
                 }
                 break;
+            case 'c':
+            case 'C':
+                // Testing shortcut: force complete draft with current towers
+                if (window.Game && !window.Game.draftCompleted && window.Game.towersPlacedThisRound > 0) {
+                    window.Game.completeRoundPrep();
+                }
+                break;
             case ' ':
                 e.preventDefault();
                 if (window.Game && window.Game.waveManager) {

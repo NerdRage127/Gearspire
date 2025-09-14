@@ -74,12 +74,17 @@ class Grid {
             return false;
         }
         
-        // Temporarily place a tower to check if path is still valid
-        this.setCell(x, y, 'tower');
-        const pathExists = this.hasValidPath();
-        this.setCell(x, y, 'empty');
+        // Check if within no-build zone around home point  
+        const homeDistance = Math.sqrt(
+            (x - this.pathEnd.x) ** 2 + (y - this.pathEnd.y) ** 2
+        );
+        if (homeDistance <= 1.5) { // 1.5 tile radius no-build zone around home
+            return false;
+        }
         
-        return pathExists;
+        // For now, allow placement anywhere else - pathfinding validation will happen after 5 towers
+        // This gives players more freedom to experiment with maze designs
+        return true;
     }
     
     canPlaceCrate(x, y) {
