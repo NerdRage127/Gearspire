@@ -260,7 +260,7 @@ class Grid {
     getCellColor(cell) {
         switch (cell.type) {
             case 'path':
-                return 'rgba(47, 27, 20, 0.1)'; // Same as empty to hide the stripe
+                return 'rgba(139, 69, 19, 0.3)'; // Brown path color - distinguishable from empty
             case 'tower':
                 return 'rgba(34, 139, 34, 0.3)';
             case 'crate':
