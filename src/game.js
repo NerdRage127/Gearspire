@@ -57,6 +57,9 @@ class Game {
             autoSave: true
         };
         
+        // Mobile detection
+        this.isMobile = this.detectMobile();
+        
         this.initialize();
     }
     
@@ -256,20 +259,51 @@ class Game {
         });
     }
     
+    detectMobile() {
+        // Check viewport width and user agent for mobile detection
+        const isMobileWidth = window.innerWidth <= 900;
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        return isMobileWidth || (isMobileDevice && isTouchDevice);
+    }
+    
     resizeCanvas() {
         const container = this.canvas.parentElement;
         const rect = container.getBoundingClientRect();
         
-        // Maintain aspect ratio (28:17 grid)
-        const targetAspect = 28 / 17;
-        const containerAspect = rect.width / rect.height;
+        // Update mobile status on resize
+        this.isMobile = this.detectMobile();
         
-        if (containerAspect > targetAspect) {
-            this.canvas.height = rect.height - 40; // Leave some margin
-            this.canvas.width = this.canvas.height * targetAspect;
+        // Different sizing logic for mobile vs desktop
+        if (this.isMobile) {
+            // For mobile: canvas is rotated 90 degrees
+            // We want the canvas to fit the portrait viewport after rotation
+            const availableHeight = rect.height - 20; // Some margin
+            const availableWidth = rect.width - 20;
+            
+            // Since canvas is rotated, its "width" becomes screen height and "height" becomes screen width
+            // Grid is 28x17, so aspect ratio is 28/17 ≈ 1.647
+            const gridAspect = 28 / 17;
+            
+            // For rotated canvas: screen height / screen width should match grid width / grid height
+            const canvasHeight = Math.min(availableWidth, availableHeight / gridAspect);
+            const canvasWidth = canvasHeight * gridAspect;
+            
+            this.canvas.width = canvasWidth;
+            this.canvas.height = canvasHeight;
         } else {
-            this.canvas.width = rect.width - 40;
-            this.canvas.height = this.canvas.width / targetAspect;
+            // Desktop logic (unchanged)
+            const targetAspect = 28 / 17;
+            const containerAspect = rect.width / rect.height;
+            
+            if (containerAspect > targetAspect) {
+                this.canvas.height = rect.height - 40; // Leave some margin
+                this.canvas.width = this.canvas.height * targetAspect;
+            } else {
+                this.canvas.width = rect.width - 40;
+                this.canvas.height = this.canvas.width / targetAspect;
+            }
         }
         
         // Update grid tile size based on canvas size

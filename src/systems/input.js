@@ -22,6 +22,11 @@ class InputSystem {
         this.canvas.addEventListener('mouseup', (e) => this.handleMouseUp(e));
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
+        // Touch events for mobile
+        this.canvas.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+        this.canvas.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+        this.canvas.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+        
         // Keyboard events
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         
@@ -97,8 +102,31 @@ class InputSystem {
     
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
-        this.mouse.x = e.clientX - rect.left;
-        this.mouse.y = e.clientY - rect.top;
+        let x = e.clientX - rect.left;
+        let y = e.clientY - rect.top;
+        
+        // Handle rotated canvas coordinates for mobile
+        if (window.Game && window.Game.isMobile) {
+            // Canvas is rotated 90 degrees clockwise
+            // Transform screen coordinates to canvas coordinates
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            // Translate to center, rotate, then translate back
+            const relX = x - centerX;
+            const relY = y - centerY;
+            
+            // Rotate 90 degrees counter-clockwise to undo the CSS rotation
+            const rotatedX = relY;
+            const rotatedY = -relX;
+            
+            // Transform to canvas coordinates (accounting for canvas being rotated)
+            x = rotatedX + this.canvas.width / 2;
+            y = rotatedY + this.canvas.height / 2;
+        }
+        
+        this.mouse.x = x;
+        this.mouse.y = y;
     }
     
     handleMouseDown(e) {
@@ -404,6 +432,55 @@ class InputSystem {
     
     isPlacementMode() {
         return this.placementMode !== null;
+    }
+    
+    // Touch event handlers for mobile support
+    handleTouchStart(e) {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            this.updateMouseFromTouch(touch);
+            this.mouse.down = true;
+            this.handleLeftClick();
+        }
+    }
+    
+    handleTouchMove(e) {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            this.updateMouseFromTouch(touch);
+        }
+    }
+    
+    handleTouchEnd(e) {
+        e.preventDefault();
+        this.mouse.down = false;
+    }
+    
+    updateMouseFromTouch(touch) {
+        const rect = this.canvas.getBoundingClientRect();
+        let x = touch.clientX - rect.left;
+        let y = touch.clientY - rect.top;
+        
+        // Handle rotated canvas coordinates for mobile (same logic as mouse)
+        if (window.Game && window.Game.isMobile) {
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+            
+            const relX = x - centerX;
+            const relY = y - centerY;
+            
+            // Rotate 90 degrees counter-clockwise to undo the CSS rotation
+            const rotatedX = relY;
+            const rotatedY = -relX;
+            
+            x = rotatedX + this.canvas.width / 2;
+            y = rotatedY + this.canvas.height / 2;
+        }
+        
+        this.mouse.x = x;
+        this.mouse.y = y;
     }
 }
 
