@@ -114,11 +114,14 @@ class UI {
     updateTowerAffordability(gold) {
         const towerCards = document.querySelectorAll('.tower-card');
         towerCards.forEach(card => {
-            const cost = parseInt(card.querySelector('.cost').textContent);
-            if (gold >= cost) {
-                card.classList.remove('unaffordable');
-            } else {
-                card.classList.add('unaffordable');
+            const costElement = card.querySelector('.cost');
+            if (costElement) {
+                const cost = parseInt(costElement.textContent);
+                if (gold >= cost) {
+                    card.classList.remove('unaffordable');
+                } else {
+                    card.classList.add('unaffordable');
+                }
             }
         });
     }
