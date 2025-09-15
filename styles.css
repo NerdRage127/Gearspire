@@ -603,3 +603,187 @@ footer {
     margin-bottom: 1rem;
     color: var(--light-color);
 }
+
+/* Weights Panel Styles */
+#weights-panel {
+    background: rgba(47, 27, 20, 0.95);
+    border: 2px solid var(--accent-color);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+#weights-panel h4 {
+    color: var(--accent-color);
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+}
+
+.help-text {
+    color: var(--secondary-color);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+.weight-controls {
+    margin-bottom: 1rem;
+}
+
+.weight-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+}
+
+.weight-item label {
+    color: var(--light-color);
+    font-size: 0.9rem;
+    min-width: 120px;
+    flex-shrink: 0;
+}
+
+.weight-slider {
+    flex: 1;
+    height: 6px;
+    background: var(--dark-color);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.weight-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.weight-slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+}
+
+.weight-slider:hover::-webkit-slider-thumb {
+    background: #ffed4e;
+}
+
+.weight-value {
+    color: var(--accent-color);
+    font-weight: bold;
+    min-width: 30px;
+    text-align: right;
+    font-size: 0.9rem;
+}
+
+.weight-summary {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+}
+
+.weight-sum {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.weight-total {
+    color: var(--accent-color);
+    min-width: 30px;
+    text-align: center;
+}
+
+.weight-total.invalid {
+    color: var(--danger-color);
+}
+
+.weight-validation {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background: rgba(220, 20, 60, 0.2);
+    border: 1px solid var(--danger-color);
+    border-radius: 4px;
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.weight-presets {
+    margin-bottom: 1rem;
+}
+
+.weight-presets h5 {
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.preset-btn {
+    background: var(--dark-color);
+    border: 1px solid var(--secondary-color);
+    color: var(--light-color);
+    padding: 0.4rem 0.8rem;
+    margin: 0.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.preset-btn:hover {
+    background: var(--secondary-color);
+    color: var(--dark-color);
+}
+
+.weight-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.weight-actions button {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid var(--secondary-color);
+    background: var(--primary-color);
+    color: var(--light-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.weight-actions button:hover:not(:disabled) {
+    background: var(--secondary-color);
+    border-color: var(--accent-color);
+}
+
+.weight-actions button.primary {
+    background: var(--accent-color);
+    color: var(--dark-color);
+    border-color: var(--accent-color);
+    font-weight: bold;
+}
+
+.weight-actions button.primary:hover:not(:disabled) {
+    background: #ffed4e;
+}
+
+.weight-actions button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}

@@ -47,6 +47,7 @@ class Game {
         this.pauseScreen = new PauseScreen();
         this.saveSystem = new SaveSystem();
         this.killTracker = new KillTrackerSystem();
+        this.probabilityManager = new ProbabilityManager();
         
         // Settings
         this.settings = {
@@ -281,6 +282,11 @@ class Game {
         // Initialize kill tracker
         if (this.killTracker) {
             this.killTracker.initialize();
+        }
+        
+        // Initialize weights UI
+        if (this.ui) {
+            this.ui.initializeWeightsUI();
         }
         
         this.gameLoop();

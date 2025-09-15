@@ -254,6 +254,234 @@ class UI {
             document.body.removeChild(announcement);
         }, 1000);
     }
+
+    // Weights UI functionality
+    initializeWeightsUI() {
+        // Initialize weights panel elements
+        this.weightsElements = {
+            panel: document.getElementById('weights-panel'),
+            button: document.getElementById('weights-btn'),
+            sliders: {
+                gear_turret: document.getElementById('weight-gear-turret'),
+                steam_cannon: document.getElementById('weight-steam-cannon'),
+                tesla_coil: document.getElementById('weight-tesla-coil'),
+                poison_vent: document.getElementById('weight-poison-vent'),
+                frost_condenser: document.getElementById('weight-frost-condenser')
+            },
+            values: {},
+            total: document.getElementById('weight-total'),
+            validation: document.getElementById('weight-validation'),
+            testRollBtn: document.getElementById('test-roll-btn'),
+            applyBtn: document.getElementById('apply-weights-btn')
+        };
+
+        // Get value display elements
+        Object.keys(this.weightsElements.sliders).forEach(type => {
+            const slider = this.weightsElements.sliders[type];
+            if (slider) {
+                this.weightsElements.values[type] = slider.parentElement.querySelector('.weight-value');
+            }
+        });
+
+        // Set up event listeners
+        this.setupWeightsEventListeners();
+        
+        // Initialize with current weights
+        this.updateWeightsDisplay();
+    }
+
+    setupWeightsEventListeners() {
+        // Toggle weights panel
+        if (this.weightsElements.button) {
+            this.weightsElements.button.addEventListener('click', () => {
+                this.toggleWeightsPanel();
+            });
+        }
+
+        // Slider events
+        Object.keys(this.weightsElements.sliders).forEach(type => {
+            const slider = this.weightsElements.sliders[type];
+            if (slider) {
+                slider.addEventListener('input', (e) => {
+                    this.updateWeightValue(type, parseInt(e.target.value));
+                });
+            }
+        });
+
+        // Preset buttons
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const preset = e.target.dataset.preset;
+                this.applyWeightPreset(preset);
+            });
+        });
+
+        // Test roll button
+        if (this.weightsElements.testRollBtn) {
+            this.weightsElements.testRollBtn.addEventListener('click', () => {
+                this.testWeightRoll();
+            });
+        }
+
+        // Apply weights button
+        if (this.weightsElements.applyBtn) {
+            this.weightsElements.applyBtn.addEventListener('click', () => {
+                this.applyCurrentWeights();
+            });
+        }
+    }
+
+    toggleWeightsPanel() {
+        if (this.weightsElements.panel) {
+            this.weightsElements.panel.classList.toggle('hidden');
+            
+            // Update weights display when opening
+            if (!this.weightsElements.panel.classList.contains('hidden')) {
+                this.updateWeightsDisplay();
+            }
+        }
+    }
+
+    updateWeightsDisplay() {
+        if (!window.Game || !window.Game.probabilityManager) return;
+
+        const currentWeights = window.Game.probabilityManager.getCurrentWeights();
+        
+        // Update sliders and values
+        Object.keys(currentWeights).forEach(type => {
+            const slider = this.weightsElements.sliders[type];
+            const valueDisplay = this.weightsElements.values[type];
+            
+            if (slider) {
+                slider.value = currentWeights[type];
+            }
+            if (valueDisplay) {
+                valueDisplay.textContent = currentWeights[type];
+            }
+        });
+
+        this.validateCurrentWeights();
+    }
+
+    updateWeightValue(type, value) {
+        // Update display
+        const valueDisplay = this.weightsElements.values[type];
+        if (valueDisplay) {
+            valueDisplay.textContent = value;
+        }
+
+        // Validate weights
+        this.validateCurrentWeights();
+    }
+
+    validateCurrentWeights() {
+        if (!window.Game || !window.Game.probabilityManager) return;
+
+        const weights = this.getCurrentWeightsFromUI();
+        const validation = window.Game.probabilityManager.validateWeights(weights);
+
+        // Update total display
+        if (this.weightsElements.total) {
+            this.weightsElements.total.textContent = validation.sum.toFixed(0);
+            
+            if (validation.isValid) {
+                this.weightsElements.total.classList.remove('invalid');
+            } else {
+                this.weightsElements.total.classList.add('invalid');
+            }
+        }
+
+        // Update validation message
+        if (this.weightsElements.validation) {
+            if (validation.isValid) {
+                this.weightsElements.validation.classList.add('hidden');
+            } else {
+                this.weightsElements.validation.classList.remove('hidden');
+                this.weightsElements.validation.textContent = validation.errors.join(', ');
+            }
+        }
+
+        // Update apply button
+        if (this.weightsElements.applyBtn) {
+            this.weightsElements.applyBtn.disabled = !validation.isValid;
+        }
+    }
+
+    getCurrentWeightsFromUI() {
+        const weights = {};
+        
+        Object.keys(this.weightsElements.sliders).forEach(type => {
+            const slider = this.weightsElements.sliders[type];
+            if (slider) {
+                weights[type] = parseInt(slider.value);
+            }
+        });
+
+        return weights;
+    }
+
+    applyWeightPreset(presetName) {
+        if (!window.Game || !window.Game.probabilityManager) return;
+
+        const presets = window.Game.probabilityManager.getPresets();
+        const preset = presets[presetName];
+        
+        if (!preset) return;
+
+        // Update sliders
+        Object.keys(preset.weights).forEach(type => {
+            const slider = this.weightsElements.sliders[type];
+            if (slider) {
+                slider.value = preset.weights[type];
+                this.updateWeightValue(type, preset.weights[type]);
+            }
+        });
+
+        this.showMessage(`Applied ${preset.name} preset`);
+    }
+
+    testWeightRoll() {
+        if (!window.Game || !window.Game.probabilityManager) return;
+
+        const weights = this.getCurrentWeightsFromUI();
+        const validation = window.Game.probabilityManager.validateWeights(weights);
+        
+        if (!validation.isValid) {
+            this.showMessage('Fix weight errors before testing', 3000);
+            return;
+        }
+
+        // Temporarily set weights for testing
+        const originalWeights = window.Game.probabilityManager.getCurrentWeights();
+        window.Game.probabilityManager.setWeights(weights);
+        
+        // Do test roll
+        const offers = window.Game.probabilityManager.roll(5);
+        
+        // Restore original weights
+        window.Game.probabilityManager.setWeights(originalWeights);
+        
+        // Show results
+        const offerNames = offers.map(type => type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()));
+        this.showMessage(`Test Roll: ${offerNames.join(', ')}`, 5000);
+    }
+
+    applyCurrentWeights() {
+        if (!window.Game || !window.Game.probabilityManager) return;
+
+        const weights = this.getCurrentWeightsFromUI();
+        const success = window.Game.probabilityManager.setWeights(weights);
+        
+        if (success) {
+            this.showMessage('Spawn weights updated!');
+            // Save the game to persist the new weights
+            if (window.Game.saveSystem) {
+                window.Game.saveSystem.saveGame();
+            }
+        } else {
+            this.showMessage('Failed to update weights', 3000);
+        }
+    }
 }
 
 // Add CSS for animations and effects
@@ -352,4 +580,5 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Make UI available globally
+window.UI = UI;
 window.UI = UI;
