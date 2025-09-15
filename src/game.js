@@ -17,7 +17,7 @@ class Game {
         // Game stats
         this.lives = 20;
         this.score = 0;
-        this.gems = 100; // Starting gems for building towers
+        this.gems = 5; // Starting gems for building towers (changed from 100 to 5)
         this.maxLives = 20;
         this.towers = [];
         this.towersPlacedThisRound = 0;
@@ -29,7 +29,7 @@ class Game {
         this.buildMode = false;
         this.buildModeActive = false;
         this.towersBuiltInPhase = [];
-        this.gemCostPerTower = 25; // Cost per tower in gems
+        this.gemCostPerTower = 1; // Cost per tower in gems (changed from 25 to 1)
         
         // V2 mechanics
         this.spawnWeights = {
@@ -74,10 +74,30 @@ class Game {
         this.resizeCanvas();
         window.addEventListener('resize', () => this.resizeCanvas());
         
+        // Set up tower selection panel event listeners
+        this.setupTowerSelectionListeners();
+        
         // Auto-load previous game or start new game (no welcome screen)
         this.autoStartGame();
         
         console.log('Gearspire initialized successfully');
+    }
+    
+    setupTowerSelectionListeners() {
+        const keepBtn = document.getElementById('keep-selected-btn');
+        const combineBtn = document.getElementById('combine-selected-btn');
+        
+        if (keepBtn) {
+            keepBtn.addEventListener('click', () => {
+                this.keepSelectedTowers();
+            });
+        }
+        
+        if (combineBtn) {
+            combineBtn.addEventListener('click', () => {
+                this.combineSelectedTowers();
+            });
+        }
     }
     
     autoStartGame() {
@@ -497,6 +517,8 @@ class Game {
         if (this.buildMode) {
             if (!this.canAffordTower()) {
                 this.ui.showMessage(`Not enough gems! Need ${this.gemCostPerTower} gems.`);
+                // If out of gems in build mode, show tower selection panel
+                this.showTowerSelectionPanel();
                 return false;
             }
             
@@ -531,18 +553,23 @@ class Game {
         if (this.buildMode) {
             this.towersBuiltInPhase.push(tower);
             this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! Gems: ${this.gems}`);
+            
+            // Check if player is out of gems after placing
+            if (!this.canAffordTower()) {
+                this.showTowerSelectionPanel();
+            }
         } else {
             this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/5)`);
         }
         
-        // If we've placed max towers for this round, check pathfinding and enter selection phase
+        // If we've placed max towers for this round, check pathfinding 
         if (this.towersPlacedThisRound >= 5) { // maxTowersPerRound = 5
             // Check if enemies still have a valid path to home
             if (!this.grid.hasValidPath()) {
                 this.handleBlockedPath();
                 return true;
             }
-            this.enterSelectionPhase();
+            // No longer calling enterSelectionPhase since we handle selection differently
         }
         
         return true;
@@ -616,6 +643,7 @@ class Game {
         // Reset game state
         this.lives = this.maxLives;
         this.score = 0;
+        this.gems = 5; // Start with 5 gems instead of 100
         this.gameTime = 0;
         this.isPaused = false;
         this.towersPlacedThisRound = 0;
@@ -790,6 +818,228 @@ class Game {
             return true;
         }
         return false;
+    }
+    
+    removeTowerObject(tower) {
+        const towerIndex = this.towers.findIndex(t => t.id === tower.id);
+        if (towerIndex !== -1) {
+            // Remove from grid
+            const gridPos = this.grid.worldToGrid(tower.x, tower.y);
+            this.grid.setCell(gridPos.x, gridPos.y, 'empty');
+            
+            // Remove from towers array
+            this.towers.splice(towerIndex, 1);
+            
+            // Remove from build phase tracking
+            const buildIndex = this.towersBuiltInPhase.findIndex(t => t.id === tower.id);
+            if (buildIndex !== -1) {
+                this.towersBuiltInPhase.splice(buildIndex, 1);
+            }
+            
+            // Remove from new towers tracking
+            const newIndex = this.newTowersThisRound.findIndex(t => t.id === tower.id);
+            if (newIndex !== -1) {
+                this.newTowersThisRound.splice(newIndex, 1);
+            }
+            
+            return true;
+        }
+        return false;
+    }
+    
+    // Tower Selection Panel Methods
+    showTowerSelectionPanel() {
+        const panel = document.getElementById('tower-info-panel');
+        const grid = document.getElementById('tower-selection-grid');
+        
+        if (!panel || !grid) return;
+        
+        // Clear existing content
+        grid.innerHTML = '';
+        
+        // Show only towers built in this phase
+        const towersToShow = this.buildMode ? this.towersBuiltInPhase : this.newTowersThisRound;
+        
+        if (towersToShow.length === 0) {
+            grid.innerHTML = '<p>No towers available for selection.</p>';
+            return;
+        }
+        
+        // Create cards for each tower
+        towersToShow.forEach(tower => {
+            const card = this.createTowerCard(tower);
+            grid.appendChild(card);
+        });
+        
+        // Show the panel
+        panel.classList.remove('hidden');
+        
+        // Update button states
+        this.updateTowerActionButtons();
+        
+        this.ui.showMessage('Out of gems! Choose which towers to keep or combine.');
+    }
+    
+    hideTowerSelectionPanel() {
+        const panel = document.getElementById('tower-info-panel');
+        if (panel) {
+            panel.classList.add('hidden');
+        }
+    }
+    
+    createTowerCard(tower) {
+        const card = document.createElement('div');
+        card.className = 'tower-card';
+        card.dataset.towerId = tower.id;
+        
+        const stats = tower.getTypeStats ? tower.getTypeStats() : TowerTypes.getTowerStats(tower.type);
+        
+        card.innerHTML = `
+            <div class="tower-card-header">
+                <div class="tower-card-name">${stats.name}</div>
+                <div class="tower-card-level">Lv.${tower.level || 1}</div>
+            </div>
+            <div class="tower-card-stats">
+                <div class="tower-card-stat">
+                    <span>Damage:</span>
+                    <span>${tower.damage}</span>
+                </div>
+                <div class="tower-card-stat">
+                    <span>Range:</span>
+                    <span>${tower.range.toFixed(1)}</span>
+                </div>
+                <div class="tower-card-stat">
+                    <span>Fire Rate:</span>
+                    <span>${(60/tower.fireRate).toFixed(1)}/s</span>
+                </div>
+                <div class="tower-card-stat">
+                    <span>Type:</span>
+                    <span>${stats.projectileType}</span>
+                </div>
+            </div>
+        `;
+        
+        // Add click handler for selection
+        card.addEventListener('click', () => {
+            card.classList.toggle('selected');
+            tower.isSelected = card.classList.contains('selected');
+            this.updateTowerActionButtons();
+        });
+        
+        return card;
+    }
+    
+    updateTowerActionButtons() {
+        const keepBtn = document.getElementById('keep-selected-btn');
+        const combineBtn = document.getElementById('combine-selected-btn');
+        
+        if (!keepBtn || !combineBtn) return;
+        
+        const selectedTowers = this.getSelectedTowers();
+        const selectedCount = selectedTowers.length;
+        
+        // Enable keep button if at least one tower is selected
+        keepBtn.disabled = selectedCount === 0;
+        keepBtn.textContent = selectedCount > 0 ? `Keep Selected (${selectedCount})` : 'Keep Selected';
+        
+        // Enable combine button if 2-3 towers are selected
+        combineBtn.disabled = selectedCount < 2 || selectedCount > 3;
+        combineBtn.textContent = selectedCount >= 2 && selectedCount <= 3 ? 
+            `Combine Selected (${selectedCount})` : 'Combine Selected';
+    }
+    
+    getSelectedTowers() {
+        const towersToCheck = this.buildMode ? this.towersBuiltInPhase : this.newTowersThisRound;
+        return towersToCheck.filter(tower => tower.isSelected);
+    }
+    
+    keepSelectedTowers() {
+        const selectedTowers = this.getSelectedTowers();
+        if (selectedTowers.length === 0) return;
+        
+        // Remove unselected towers
+        const towersToRemove = (this.buildMode ? this.towersBuiltInPhase : this.newTowersThisRound)
+            .filter(tower => !tower.isSelected);
+        
+        towersToRemove.forEach(tower => {
+            this.removeTowerObject(tower);
+        });
+        
+        // Clear selection flags
+        selectedTowers.forEach(tower => {
+            tower.isSelected = false;
+            tower.isNewThisRound = false;
+        });
+        
+        // Clear the phase arrays
+        if (this.buildMode) {
+            this.towersBuiltInPhase = [];
+        }
+        this.newTowersThisRound = [];
+        
+        this.hideTowerSelectionPanel();
+        this.exitBuildMode();
+        
+        this.ui.showMessage(`Kept ${selectedTowers.length} towers. Ready for next wave!`);
+    }
+    
+    combineSelectedTowers() {
+        const selectedTowers = this.getSelectedTowers();
+        if (selectedTowers.length < 2 || selectedTowers.length > 3) return;
+        
+        // Find a position for the combined tower (average of selected positions)
+        const avgX = selectedTowers.reduce((sum, t) => sum + t.x, 0) / selectedTowers.length;
+        const avgY = selectedTowers.reduce((sum, t) => sum + t.y, 0) / selectedTowers.length;
+        
+        // Remove selected towers
+        selectedTowers.forEach(tower => {
+            this.removeTowerObject(tower);
+        });
+        
+        // Create combined tower (enhanced version)
+        const combinedTower = this.createCombinedTower(selectedTowers, avgX, avgY);
+        this.towers.push(combinedTower);
+        
+        // Place on grid
+        const gridPos = this.grid.worldToGrid(avgX, avgY);
+        this.grid.setCell(gridPos.x, gridPos.y, 'tower', combinedTower);
+        
+        // Update phase tracking
+        if (this.buildMode) {
+            this.towersBuiltInPhase = this.towersBuiltInPhase.filter(t => !selectedTowers.includes(t));
+            this.towersBuiltInPhase.push(combinedTower);
+        }
+        this.newTowersThisRound = this.newTowersThisRound.filter(t => !selectedTowers.includes(t));
+        this.newTowersThisRound.push(combinedTower);
+        
+        this.hideTowerSelectionPanel();
+        
+        this.ui.showMessage(`Combined ${selectedTowers.length} towers into ${combinedTower.name}!`);
+    }
+    
+    createCombinedTower(sourceTowers, x, y) {
+        // Use the first tower as base and enhance it
+        const baseTower = sourceTowers[0];
+        const baseType = baseTower.type;
+        const stats = TowerTypes.getTowerStats(baseType);
+        
+        // Create enhanced tower
+        const combinedTower = TowerTypes.createTower(baseType, x, y);
+        combinedTower.id = `combined-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Calculate enhancement based on number of towers combined
+        const enhancementFactor = 1 + (sourceTowers.length * 0.5); // 50% boost per tower
+        
+        combinedTower.damage = Math.floor(combinedTower.damage * enhancementFactor);
+        combinedTower.range *= Math.min(2.0, 1 + (sourceTowers.length * 0.2)); // Max 2x range
+        combinedTower.fireRate = Math.max(10, Math.floor(combinedTower.fireRate * 0.8)); // Faster fire rate
+        
+        combinedTower.name = `Enhanced ${stats.name}`;
+        combinedTower.tier = 2;
+        combinedTower.isNewThisRound = true;
+        combinedTower.isSelected = false;
+        
+        return combinedTower;
     }
 }
 

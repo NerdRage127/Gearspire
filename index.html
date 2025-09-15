@@ -161,6 +161,15 @@
         </main>
         
         <footer>
+            <div id="tower-info-panel" class="hidden">
+                <h4>Tower Selection</h4>
+                <p>Choose which towers to keep or combine:</p>
+                <div id="tower-selection-grid"></div>
+                <div id="tower-actions-panel">
+                    <button id="keep-selected-btn" class="primary" disabled>Keep Selected</button>
+                    <button id="combine-selected-btn" class="secondary" disabled>Combine Selected</button>
+                </div>
+            </div>
             <div id="debug-info">
                 <span>FPS: <span id="fps">0</span></span>
                 <span>Enemies: <span id="enemy-count">0</span></span>

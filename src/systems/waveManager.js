@@ -163,6 +163,9 @@ class WaveManager {
         if (window.Game) {
             window.Game.addScore(100 * this.currentWave); // Score bonus
             
+            // Award 5 gems each round
+            window.Game.gems += 5;
+            
             // Reset round prep state for next wave
             window.Game.draftCompleted = false;
             window.Game.inSelectionPhase = false;
@@ -173,6 +176,10 @@ class WaveManager {
         // Notify UI
         if (window.Game && window.Game.ui) {
             window.Game.ui.showWaveComplete(this.currentWave);
+            // Show gem reward message
+            if (window.Game.ui.showMessage) {
+                window.Game.ui.showMessage(`Wave ${this.currentWave} complete! +5 gems awarded!`);
+            }
         }
         
         // Auto-save progress
