@@ -1,0 +1,5 @@
+{
+  "killsToLevel": [0, 15, 40, 90, 180],
+  "draftOffersPerBuild": 5,
+  "spawnWeightCap": 60
+}

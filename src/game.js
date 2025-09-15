@@ -17,10 +17,22 @@ class Game {
         // Game stats
         this.lives = 20;
         this.score = 0;
+        this.gold = 100; // Starting gold for building towers
         this.maxLives = 20;
         this.towers = [];
         this.towersPlacedThisRound = 0;
         this.maxTowersPerRound = 5; // Can place up to 5 towers per round
+        this.fusionCharges = 0; // For combining towers
+        
+        // V2 mechanics
+        this.spawnWeights = {
+            gear_turret: 20,
+            steam_cannon: 20,
+            tesla_coil: 20,
+            poison_vent: 20,
+            frost_condenser: 20
+        };
+        this.recipesUnlocked = [];
         
         // Game objects
         this.grid = new Grid(28, 17, 40); // 40% increase: 20*1.4=28, 12*1.4≈17
