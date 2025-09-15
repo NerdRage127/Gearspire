@@ -470,6 +470,11 @@ footer {
     animation: explosion 0.5s ease-out;
 }
 
+/* Mobile/Desktop Detection CSS Variable */
+:root {
+    --is-mobile: 0;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     #game-panel {
@@ -477,22 +482,132 @@ footer {
     }
 }
 
+/* Mobile Layout - Portrait orientation optimized */
 @media (max-width: 900px) {
-    main {
-        flex-direction: column;
+    :root {
+        --is-mobile: 1;
     }
     
+    main {
+        flex-direction: column;
+        height: calc(100vh - 140px); /* Account for header and footer */
+    }
+    
+    #game-area {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 0.5rem;
+        position: relative;
+    }
+    
+    /* Rotate canvas 90 degrees for mobile portrait */
+    #game-canvas {
+        transform: rotate(90deg);
+        transform-origin: center;
+        /* Canvas will be resized by JavaScript for mobile */
+    }
+    
+    /* Mobile bottom control panel */
     #game-panel {
         width: 100%;
-        max-height: 200px;
+        background: var(--dark-color);
+        border-left: none;
+        border-top: 3px solid var(--accent-color);
+        padding: 0.75rem;
+        max-height: none;
+        min-height: auto;
+        order: 3; /* Ensure it's at the bottom */
+    }
+    
+    /* Mobile control layout - horizontal buttons */
+    #controls {
+        margin-bottom: 0;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    #controls button {
+        margin-bottom: 0;
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Hide weights panel by default on mobile - show as full screen overlay */
+    #weights-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(47, 27, 20, 0.98);
+        z-index: 1000;
+        overflow-y: auto;
+        padding: 1rem;
+        border: 3px solid var(--accent-color);
+        border-radius: 0;
+    }
+    
+    #weights-panel h4 {
+        text-align: center;
+        margin-bottom: 1rem;
+        color: var(--accent-color);
+    }
+    
+    /* Add close button for mobile weights panel */
+    #weights-panel::before {
+        content: "✕ Close";
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--danger-color);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        border: 1px solid white;
+    }
+    
+    /* Mobile tower info overlay */
+    #tower-info {
+        position: fixed;
+        bottom: 120px;
+        left: 1rem;
+        right: 1rem;
+        z-index: 100;
+        max-height: 40vh;
+        overflow-y: auto;
+    }
+    
+    /* Compact header stats for mobile */
+    header {
+        padding: 0.75rem;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
     }
     
     #game-stats {
-        gap: 1rem;
+        gap: 0.75rem;
     }
     
     .stat {
-        font-size: 1rem;
+        font-size: 0.9rem;
+    }
+    
+    /* Compact footer for mobile */
+    footer {
+        padding: 0.4rem 1rem;
+        font-size: 0.8rem;
+    }
+    
+    #debug-info {
+        gap: 1rem;
+        justify-content: center;
     }
 }
 
