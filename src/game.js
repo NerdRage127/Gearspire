@@ -17,13 +17,19 @@ class Game {
         // Game stats
         this.lives = 20;
         this.score = 0;
-        this.gold = 100; // Starting gold for building towers
+        this.gems = 100; // Starting gems for building towers
         this.maxLives = 20;
         this.towers = [];
         this.towersPlacedThisRound = 0;
         this.maxTowersPerRound = 5; // Can place up to 5 towers per round
         this.newTowersThisRound = []; // Track new towers for this round
         this.fusionCharges = 0; // For combining towers
+        
+        // Build mode system
+        this.buildMode = false;
+        this.buildModeActive = false;
+        this.towersBuiltInPhase = [];
+        this.gemCostPerTower = 25; // Cost per tower in gems
         
         // V2 mechanics
         this.spawnWeights = {
@@ -365,9 +371,11 @@ class Game {
             score: this.score,
             wave: this.waveManager.getCurrentWave(),
             enemyCount: this.waveManager.getEnemies().length,
-            towerCount: this.towers.length,
+            gems: this.gems,
             waveInProgress: this.waveManager.isWaveInProgress(),
-            paused: this.isPaused
+            paused: this.isPaused,
+            buildMode: this.buildMode,
+            towersBuiltInPhase: this.towersBuiltInPhase.length
         });
         
         // Check game over
@@ -484,7 +492,23 @@ class Game {
     // Game actions
     placeTower(gridX, gridY) {
         if (!this.grid.canPlaceTower(gridX, gridY)) return false;
-        if (this.towersPlacedThisRound >= 5) return false; // maxTowersPerRound = 5
+        
+        // Check build mode and gem requirements
+        if (this.buildMode) {
+            if (!this.canAffordTower()) {
+                this.ui.showMessage(`Not enough gems! Need ${this.gemCostPerTower} gems.`);
+                return false;
+            }
+            
+            // Spend gems for the tower
+            if (!this.spendGems(this.gemCostPerTower)) {
+                this.ui.showMessage('Failed to spend gems!');
+                return false;
+            }
+        } else {
+            // Original logic for non-build mode
+            if (this.towersPlacedThisRound >= 5) return false; // maxTowersPerRound = 5
+        }
         
         // Create a random tower
         const towerType = TowerTypes.getRandomTowerType();
@@ -504,7 +528,12 @@ class Game {
         this.grid.setCell(gridX, gridY, 'tower', tower);
         this.towersPlacedThisRound++;
         
-        this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/5)`);
+        if (this.buildMode) {
+            this.towersBuiltInPhase.push(tower);
+            this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! Gems: ${this.gems}`);
+        } else {
+            this.ui.showMessage(`Placed ${TowerTypes.getTowerStats(towerType).name}! (${this.towersPlacedThisRound}/5)`);
+        }
         
         // If we've placed max towers for this round, check pathfinding and enter selection phase
         if (this.towersPlacedThisRound >= 5) { // maxTowersPerRound = 5
@@ -639,6 +668,128 @@ class Game {
     
     debugKillAll() {
         this.waveManager.killAllEnemies();
+    }
+    
+    // Build Mode Methods
+    enterBuildMode() {
+        this.buildMode = true;
+        this.buildModeActive = true;
+        this.towersBuiltInPhase = [];
+        
+        // Update UI to show build mode
+        this.ui.showMessage('Build Mode: Place towers using gems!');
+        
+        // Disable start wave button during build mode
+        const startWaveBtn = document.getElementById('start-wave-btn');
+        if (startWaveBtn) {
+            startWaveBtn.disabled = true;
+            startWaveBtn.textContent = 'Build Mode Active';
+        }
+        
+        console.log('Entered build mode');
+    }
+    
+    exitBuildMode() {
+        this.buildMode = false;
+        this.buildModeActive = false;
+        
+        // Enable start wave button and make it glow
+        const startWaveBtn = document.getElementById('start-wave-btn');
+        if (startWaveBtn) {
+            startWaveBtn.disabled = false;
+            startWaveBtn.textContent = `Start Wave ${this.waveManager.getCurrentWave() + 1}`;
+            startWaveBtn.classList.add('glow');
+        }
+        
+        this.ui.showMessage('Build Mode complete! Ready to start wave.');
+        console.log('Exited build mode');
+    }
+    
+    canAffordTower() {
+        return this.gems >= this.gemCostPerTower;
+    }
+    
+    spendGems(amount) {
+        if (this.gems >= amount) {
+            this.gems -= amount;
+            return true;
+        }
+        return false;
+    }
+    
+    // Tower combination methods
+    canCombineTowers(towers) {
+        // Check if we can combine 2-3 towers of any kind into T2
+        return towers.length >= 2 && towers.length <= 3;
+    }
+    
+    combineTowers(towerIds) {
+        // Find the towers to combine
+        const towersToCombine = this.towers.filter(tower => towerIds.includes(tower.id));
+        
+        if (!this.canCombineTowers(towersToCombine)) {
+            return false;
+        }
+        
+        // For now, create a simple T2 tower
+        // This should be expanded with proper recipes later
+        const combinedTower = this.createT2Tower(towersToCombine);
+        
+        // Remove the original towers
+        towersToCombine.forEach(tower => {
+            this.removeTower(tower.id);
+        });
+        
+        // Add the new combined tower
+        this.towers.push(combinedTower);
+        
+        this.ui.showMessage(`Combined towers into ${combinedTower.name}!`);
+        return true;
+    }
+    
+    createT2Tower(baseTowers) {
+        // Create a T2 tower based on the combination
+        // This is a simplified implementation
+        const avgPos = {
+            x: Math.round(baseTowers.reduce((sum, t) => sum + t.x, 0) / baseTowers.length),
+            y: Math.round(baseTowers.reduce((sum, t) => sum + t.y, 0) / baseTowers.length)
+        };
+        
+        // Create enhanced version with better stats
+        const baseType = baseTowers[0].type || 'gear_turret';
+        const TowerClass = window.TowerTypes.getTowerClass(baseType);
+        const tower = new TowerClass(avgPos.x, avgPos.y);
+        
+        // Enhance tower stats for T2
+        tower.damage *= 2;
+        tower.range *= 1.5;
+        tower.name = `T2 ${tower.name}`;
+        tower.tier = 2;
+        
+        return tower;
+    }
+    
+    removeTower(towerId) {
+        const towerIndex = this.towers.findIndex(tower => tower.id === towerId);
+        if (towerIndex !== -1) {
+            const tower = this.towers[towerIndex];
+            
+            // Remove from grid
+            const gridPos = this.grid.worldToGrid(tower.x, tower.y);
+            this.grid.setCell(gridPos.x, gridPos.y, 'empty');
+            
+            // Remove from towers array
+            this.towers.splice(towerIndex, 1);
+            
+            // Remove from build phase tracking
+            const buildIndex = this.towersBuiltInPhase.findIndex(t => t.id === towerId);
+            if (buildIndex !== -1) {
+                this.towersBuiltInPhase.splice(buildIndex, 1);
+            }
+            
+            return true;
+        }
+        return false;
     }
 }
 

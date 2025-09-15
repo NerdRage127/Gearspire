@@ -7,7 +7,7 @@ class UI {
     constructor() {
         this.elements = {
             lives: document.getElementById('lives'),
-            towerCount: document.getElementById('tower-count'),
+            gems: document.getElementById('gems'),
             wave: document.getElementById('wave'),
             score: document.getElementById('score'),
             fps: document.getElementById('fps'),
@@ -37,8 +37,8 @@ class UI {
             this.elements.lives.textContent = gameState.lives;
         }
         
-        if (this.elements.towerCount) {
-            this.elements.towerCount.textContent = gameState.towerCount || 0;
+        if (this.elements.gems) {
+            this.elements.gems.textContent = gameState.gems || 0;
         }
         
         if (this.elements.wave) {
@@ -69,11 +69,46 @@ class UI {
             this.elements.pauseBtn.textContent = gameState.paused ? 'Resume' : 'Pause';
         }
         
+        // Update build mode UI
+        this.updateBuildModeUI(gameState);
+        
         // Update tower affordability
         this.updateTowerAffordability(gameState.gold);
         
         // Update FPS
         this.updateFPS();
+    }
+    
+    updateBuildModeUI(gameState) {
+        const finishBuildBtn = document.getElementById('finish-build-btn');
+        const combineTowersBtn = document.getElementById('combine-towers-btn');
+        const placeTowerBtn = document.getElementById('place-tower-btn');
+        
+        if (gameState.buildMode) {
+            // Show build mode buttons
+            if (finishBuildBtn) {
+                finishBuildBtn.classList.remove('hidden');
+            }
+            if (placeTowerBtn) {
+                placeTowerBtn.textContent = 'Place Tower';
+            }
+            
+            // Show combine button if towers have been built
+            if (combineTowersBtn && gameState.towersBuiltInPhase > 0) {
+                combineTowersBtn.classList.remove('hidden');
+            }
+        } else {
+            // Hide build mode buttons
+            if (finishBuildBtn) {
+                finishBuildBtn.classList.add('hidden');
+            }
+            if (combineTowersBtn) {
+                combineTowersBtn.classList.add('hidden');
+            }
+            if (placeTowerBtn) {
+                placeTowerBtn.textContent = 'Build Mode';
+            }
+        }
     }
     
     updateTowerAffordability(gold) {

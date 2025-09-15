@@ -11,6 +11,8 @@ class InputSystem {
         this.selectedTower = null;
         this.placementMode = null; // 'tower' only now
         this.selectionMode = false; // New mode for selecting towers to keep
+        this.combineMode = false; // New mode for combining towers
+        this.selectedTowersForCombine = []; // Track towers selected for combining
         
         this.setupEventListeners();
     }
@@ -80,14 +82,43 @@ class InputSystem {
         const placeTowerBtn = document.getElementById('place-tower-btn');
         if (placeTowerBtn) {
             placeTowerBtn.addEventListener('click', () => {
-                if (window.Game && window.Game.towersPlacedThisRound < 5) { // maxTowersPerRound = 5
-                    this.placementMode = 'tower';
-                    this.showMessage('Click on empty tiles to place random towers');
-                } else {
-                    this.showMessage('Maximum towers placed for this round');
+                if (window.Game) {
+                    // Enter build mode
+                    if (!window.Game.buildMode) {
+                        window.Game.enterBuildMode();
+                    }
+                    
+                    if (window.Game.canAffordTower()) {
+                        this.placementMode = 'tower';
+                        this.showMessage('Click on empty tiles to place towers using gems');
+                    } else {
+                        this.showMessage(`Not enough gems! Need ${window.Game.gemCostPerTower} gems per tower.`);
+                    }
                 }
             });
         }
+        
+        // Finish Build button
+        const finishBuildBtn = document.getElementById('finish-build-btn');
+        if (finishBuildBtn) {
+            finishBuildBtn.addEventListener('click', () => {
+                if (window.Game && window.Game.buildMode) {
+                    window.Game.exitBuildMode();
+                    this.placementMode = null;
+                }
+            });
+        }
+        
+        // Combine Towers button
+        const combineTowersBtn = document.getElementById('combine-towers-btn');
+        if (combineTowersBtn) {
+            combineTowersBtn.addEventListener('click', () => {
+                if (window.Game) {
+                    this.enterCombineMode();
+                }
+            });
+        }
+        
         const upgradeBtn = document.getElementById('upgrade-btn');
         const sellBtn = document.getElementById('sell-btn');
         
@@ -148,6 +179,8 @@ class InputSystem {
         
         if (this.selectionMode) {
             this.handleTowerSelection(gridPos.x, gridPos.y);
+        } else if (this.combineMode) {
+            this.handleTowerCombineSelection(gridPos.x, gridPos.y);
         } else if (this.placementMode === 'tower') {
             this.placeTower(gridPos.x, gridPos.y);
         } else {
@@ -156,7 +189,18 @@ class InputSystem {
     }
     
     handleRightClick() {
-        this.cancelPlacement();
+        if (this.combineMode && this.selectedTowersForCombine.length >= 2) {
+            // Perform combination
+            const towerIds = this.selectedTowersForCombine.map(t => t.id);
+            
+            if (window.Game && window.Game.combineTowers(towerIds)) {
+                this.exitCombineMode();
+            } else {
+                this.showMessage('Failed to combine towers');
+            }
+        } else {
+            this.cancelPlacement();
+        }
     }
     
     handleKeyDown(e) {
@@ -266,6 +310,43 @@ class InputSystem {
             this.selectedTower = null;
             this.hideTowerInfo();
         }
+    }
+    
+    handleTowerCombineSelection(gridX, gridY) {
+        const cell = this.grid.getCell(gridX, gridY);
+        
+        if (cell && cell.type === 'tower' && cell.tower) {
+            const tower = cell.tower;
+            
+            // Check if tower is already selected
+            const alreadySelected = this.selectedTowersForCombine.includes(tower);
+            
+            if (alreadySelected) {
+                // Deselect tower
+                this.selectedTowersForCombine = this.selectedTowersForCombine.filter(t => t !== tower);
+                tower.selectedForCombine = false;
+                this.showMessage(`Deselected tower. Selected: ${this.selectedTowersForCombine.length}/3`);
+            } else {
+                // Select tower (max 3)
+                if (this.selectedTowersForCombine.length < 3) {
+                    this.selectedTowersForCombine.push(tower);
+                    tower.selectedForCombine = true;
+                    this.showMessage(`Selected tower. Selected: ${this.selectedTowersForCombine.length}/3`);
+                    
+                    // If we have 2-3 towers, offer to combine
+                    if (this.selectedTowersForCombine.length >= 2) {
+                        this.offerTowerCombination();
+                    }
+                } else {
+                    this.showMessage('Maximum 3 towers can be selected for combination');
+                }
+            }
+        }
+    }
+    
+    offerTowerCombination() {
+        const count = this.selectedTowersForCombine.length;
+        this.showMessage(`Combine ${count} towers? Right-click to combine, or select more towers (max 3)`);
     }
     
     upgradeTower() {
@@ -481,6 +562,42 @@ class InputSystem {
         
         this.mouse.x = x;
         this.mouse.y = y;
+    }
+    
+    enterCombineMode() {
+        this.showMessage('Combine Mode: Click on 2-3 adjacent towers to combine them!');
+        this.combineMode = true;
+        this.selectedTowersForCombine = [];
+        
+        // Visual feedback for combinable towers
+        if (window.Game) {
+            window.Game.towers.forEach(tower => {
+                tower.highlightForCombine = true;
+            });
+        }
+    }
+    
+    exitCombineMode() {
+        this.combineMode = false;
+        this.selectedTowersForCombine = [];
+        
+        // Remove visual feedback
+        if (window.Game) {
+            window.Game.towers.forEach(tower => {
+                tower.highlightForCombine = false;
+                tower.selectedForCombine = false;
+            });
+        }
+        
+        // Hide combine button, show start wave button glow
+        const combineTowersBtn = document.getElementById('combine-towers-btn');
+        if (combineTowersBtn) {
+            combineTowersBtn.classList.add('hidden');
+        }
+        
+        if (window.Game) {
+            window.Game.exitBuildMode();
+        }
     }
 }
 

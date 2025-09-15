@@ -21,11 +21,15 @@ A steampunk-inspired endless tower defense game built for the web. Players defen
 
 **Endless Tower Defense** – Survive as long as possible against scaling waves of enemies.
 
-**Strategic Placement System** – Each round, players can place up to 3 towers in chosen locations, but the tower type is randomized for each placement.
+**Build Mode Strategy** – Each round begins with Build Mode, where players use gems to place towers strategically on the battlefield.
 
-**Random Tower Mechanics** – Players choose WHERE to place towers, but the game randomly determines WHAT type of tower is placed, creating dynamic strategic decisions.
+**Gems Currency System** – Players start with gems and spend them to place towers. Each tower costs 25 gems.
 
-**No Currency System** – Focus is on strategic placement and positioning rather than resource management.
+**Tower Combination System** – After placing towers in Build Mode, players can combine 2-3 towers of any kind to create more powerful Tier 2 towers.
+
+**Wave Preparation** – Once Build Mode is complete and any tower combinations are made, the Start Wave button glows, indicating readiness to begin the enemy assault.
+
+**Random Tower Mechanics** – Players choose WHERE to place towers using gems, but the game randomly determines WHAT type of tower is placed, creating dynamic strategic decisions.
 
 **Lives System** – Start with 20 lives; lose when enemies reach your city's core.
 
@@ -95,20 +99,24 @@ Enemies start slower and fewer in early waves, gradually increasing in speed and
 
 ✅ Core grid + pathfinding
 ✅ Basic enemy movement + waves  
-✅ Random tower placement system
-✅ Round preparation phase (place up to 3 towers)
+✅ Build Mode with gems currency system
+✅ Tower placement limited by gems (25 gems per tower)
+✅ Tower combination system (2-3 towers → Tier 2 tower)
+✅ Round preparation phase with Build Mode → Combine → Wave Start flow
+✅ Glowing Start Wave button when ready to begin
 ✅ Endless scaling waves with early-game balance
-✅ HUD and UI panels
+✅ HUD and UI panels with gems display
 ✅ Save/load game state
 ✅ Consolidated tower type system for easy expansion
 
 🎯 Strategic Elements
 
-- **Placement Strategy**: Choose optimal locations for random towers
-- **Adaptive Defense**: Work with whatever towers you get
+- **Build Mode Strategy**: Use gems wisely to place towers in optimal locations
+- **Resource Management**: Balance gem spending with tower placement needs
+- **Tower Combination**: Combine 2-3 placed towers to create powerful Tier 2 towers  
+- **Adaptive Defense**: Work with whatever random towers you get from placement
 - **Path Control**: Block enemy routes while maintaining valid paths
-- **Wave Preparation**: Use the brief prep time between waves wisely
-- **No Resource Management**: Focus purely on tactical decisions
+- **Phase Management**: Build → Combine → Wave cycle creates strategic depth
 
 ## 🔄 Version Management
 
