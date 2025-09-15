@@ -10,6 +10,8 @@ class BaseTower {
         this.type = type;
         this.level = 1;
         this.maxLevel = 3;
+        this.kills = 0; // V2: Track kills for leveling
+        this.id = null; // Will be set when placed
         
         // Get type-specific stats
         const stats = this.getTypeStats(type);
@@ -22,6 +24,10 @@ class BaseTower {
         this.color = stats.color;
         this.projectileType = stats.projectileType;
         this.description = stats.description;
+        
+        // V2: Element and tags for recipes
+        this.element = stats.element || 'physical';
+        this.tags = stats.tags || ['basic'];
         
         // Targeting
         this.targetingMode = 'first'; // first, strongest, closest, random
@@ -116,7 +122,8 @@ class BaseTower {
                 target.x, target.y,
                 this.damage,
                 5, // projectile speed
-                this.projectileType
+                this.projectileType,
+                this // Pass tower reference for kill tracking
             );
         }
     }

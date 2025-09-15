@@ -75,6 +75,66 @@
                     <button id="start-wave-btn" class="primary">Start Wave</button>
                     <button id="pause-btn">Pause</button>
                     <button id="place-tower-btn" class="secondary">Place Tower</button>
+                    <button id="weights-btn" class="secondary">⚖️ Weights</button>
+                </div>
+                
+                <div id="weights-panel" class="hidden">
+                    <h4>🎲 Spawn Weights</h4>
+                    <p class="help-text">Adjust probabilities for tower spawns (must sum to 100)</p>
+                    
+                    <div class="weight-controls">
+                        <div class="weight-item">
+                            <label for="weight-gear-turret">⚙️ Gear Turret:</label>
+                            <input type="range" id="weight-gear-turret" class="weight-slider" min="0" max="60" value="20">
+                            <span class="weight-value">20</span>
+                        </div>
+                        
+                        <div class="weight-item">
+                            <label for="weight-steam-cannon">🔥 Steam Cannon:</label>
+                            <input type="range" id="weight-steam-cannon" class="weight-slider" min="0" max="60" value="20">
+                            <span class="weight-value">20</span>
+                        </div>
+                        
+                        <div class="weight-item">
+                            <label for="weight-tesla-coil">⚡ Tesla Coil:</label>
+                            <input type="range" id="weight-tesla-coil" class="weight-slider" min="0" max="60" value="20">
+                            <span class="weight-value">20</span>
+                        </div>
+                        
+                        <div class="weight-item">
+                            <label for="weight-poison-vent">☠️ Poison Vent:</label>
+                            <input type="range" id="weight-poison-vent" class="weight-slider" min="0" max="60" value="20">
+                            <span class="weight-value">20</span>
+                        </div>
+                        
+                        <div class="weight-item">
+                            <label for="weight-frost-condenser">❄️ Frost Condenser:</label>
+                            <input type="range" id="weight-frost-condenser" class="weight-slider" min="0" max="60" value="20">
+                            <span class="weight-value">20</span>
+                        </div>
+                    </div>
+                    
+                    <div class="weight-summary">
+                        <div class="weight-sum">
+                            <span>Total: </span>
+                            <span id="weight-total" class="weight-total">100</span>
+                            <span>/100</span>
+                        </div>
+                        <div id="weight-validation" class="weight-validation hidden"></div>
+                    </div>
+                    
+                    <div class="weight-presets">
+                        <h5>Presets:</h5>
+                        <button class="preset-btn" data-preset="balanced">Balanced</button>
+                        <button class="preset-btn" data-preset="shockFocus">Shock Focus</button>
+                        <button class="preset-btn" data-preset="physicalFocus">Physical</button>
+                        <button class="preset-btn" data-preset="frostControl">Frost/Control</button>
+                    </div>
+                    
+                    <div class="weight-actions">
+                        <button id="test-roll-btn" class="secondary">🎲 Test Roll</button>
+                        <button id="apply-weights-btn" class="primary" disabled>Apply Weights</button>
+                    </div>
                 </div>
                 
                 <div id="tower-info" class="hidden">
@@ -109,6 +169,7 @@
 
     <!-- Game Scripts -->
     <script src="src/version.js"></script>
+    <script src="migrations/1_to_2.js"></script>
     <script src="src/grid.js"></script>
     <script src="src/pathfinding.js"></script>
     <script src="src/entities/projectile.js"></script>
@@ -120,6 +181,8 @@
     <script src="src/systems/ui.js"></script>
     <script src="src/systems/pauseScreen.js"></script>
     <script src="src/systems/save.js"></script>
+    <script src="src/systems/killTracker.js"></script>
+    <script src="src/systems/probabilityManager.js"></script>
     <script src="src/game.js"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@ class SaveSystem {
         this.saveKey = 'gearspire_save';
         this.autoSaveInterval = 30000; // 30 seconds
         this.autoSaveTimer = null;
+        this.currentVersion = 2; // Save schema version
         
         this.startAutoSave();
     }
@@ -31,7 +32,20 @@ class SaveSystem {
             const savedData = localStorage.getItem(this.saveKey);
             if (!savedData) return null;
             
-            const gameState = JSON.parse(savedData);
+            let gameState = JSON.parse(savedData);
+            
+            // Check if migration is needed
+            if (!gameState.version || gameState.version < this.currentVersion) {
+                console.log(`Migrating save from version ${gameState.version || 1} to ${this.currentVersion}`);
+                gameState = this.migrateSave(gameState);
+                
+                // Save the migrated data
+                if (gameState) {
+                    localStorage.setItem(this.saveKey, JSON.stringify(gameState));
+                    console.log('Migrated save data saved');
+                }
+            }
+            
             console.log('Game loaded successfully');
             return gameState;
         } catch (error) {
@@ -39,40 +53,52 @@ class SaveSystem {
             return null;
         }
     }
+
+    migrateSave(saveData) {
+        if (!saveData) return null;
+        
+        // Apply migrations sequentially
+        let currentData = saveData;
+        const currentVersion = currentData.version || 1;
+        
+        if (currentVersion < 2 && window.Migration_1_to_2) {
+            currentData = window.Migration_1_to_2.migrateV1ToV2(currentData);
+        }
+        
+        return currentData;
+    }
     
     createSaveData() {
         const game = window.Game;
         
-        // Save basic game state
+        // Create v2 save format
         const saveData = {
-            version: window.GameVersion ? window.GameVersion.version : '1.0.0',
-            timestamp: Date.now(),
-            gameStats: {
+            version: this.currentVersion,
+            meta: {
+                timestamp: Date.now(),
+                build: "v0.2.0"
+            },
+            state: {
+                money: game.gold || 0,
                 lives: game.lives,
-                gold: game.gold,
-                score: game.score,
                 wave: game.waveManager.getCurrentWave(),
-                gameTime: game.gameTime
-            },
-            
-            // Save grid state
-            grid: this.serializeGrid(game.grid),
-            
-            // Save towers
-            towers: this.serializeTowers(game.towers),
-            
-            // Save wave manager state
-            waveManager: {
-                currentWave: game.waveManager.currentWave,
-                waveInProgress: game.waveManager.waveInProgress,
-                enemies: this.serializeEnemies(game.waveManager.getEnemies())
-            },
-            
-            // Save settings
-            settings: {
-                volume: game.settings?.volume || 1.0,
-                quality: game.settings?.quality || 'high',
-                showFPS: game.settings?.showFPS || true
+                fusionCharges: game.fusionCharges || 0,
+                
+                // New v2 fields
+                spawnWeights: game.spawnWeights || {
+                    gear_turret: 20,
+                    steam_cannon: 20,
+                    tesla_coil: 20,
+                    poison_vent: 20,
+                    frost_condenser: 20
+                },
+                
+                towers: this.serializeTowersV2(game.towers),
+                recipesUnlocked: game.recipesUnlocked || [],
+                settings: {
+                    speed: game.settings?.speed || 1,
+                    volume: game.settings?.volume || 0.7
+                }
             }
         };
         
@@ -120,6 +146,41 @@ class SaveSystem {
             fireRate: tower.fireRate
         }));
     }
+
+    serializeTowersV2(towers) {
+        return towers.map((tower, index) => ({
+            id: tower.id || `t-${String(index).padStart(3, '0')}`,
+            key: tower.type,
+            x: tower.x,
+            y: tower.y,
+            level: tower.level,
+            kills: tower.kills || 0,
+            element: tower.element || this.getTowerElement(tower.type),
+            tags: tower.tags || this.getTowerTags(tower.type)
+        }));
+    }
+
+    getTowerElement(towerType) {
+        const elementMap = {
+            'gear_turret': 'physical',
+            'steam_cannon': 'fire',
+            'tesla_coil': 'electric',
+            'poison_vent': 'poison',
+            'frost_condenser': 'ice'
+        };
+        return elementMap[towerType] || 'physical';
+    }
+
+    getTowerTags(towerType) {
+        const tagMap = {
+            'gear_turret': ['basic', 'mechanical'],
+            'steam_cannon': ['basic', 'steam'],
+            'tesla_coil': ['basic', 'electric'],
+            'poison_vent': ['basic', 'chemical'],
+            'frost_condenser': ['basic', 'ice']
+        };
+        return tagMap[towerType] || ['basic'];
+    }
     
     serializeEnemies(enemies) {
         return enemies.map(enemy => ({
@@ -142,6 +203,12 @@ class SaveSystem {
         try {
             const game = window.Game;
             
+            // Check if this is v2 format
+            if (saveData.version === 2 && saveData.state) {
+                return this.restoreGameStateV2(saveData);
+            }
+            
+            // Legacy v1 restoration (keep for compatibility)
             // Restore basic game stats
             game.lives = saveData.gameStats.lives;
             game.gold = saveData.gameStats.gold;
@@ -162,12 +229,43 @@ class SaveSystem {
                 game.settings = { ...saveData.settings };
             }
             
-            console.log('Game state restored successfully');
+            console.log('Game state restored successfully (v1 format)');
             return true;
         } catch (error) {
             console.error('Failed to restore game state:', error);
             return false;
         }
+    }
+
+    restoreGameStateV2(saveData) {
+        const game = window.Game;
+        const state = saveData.state;
+        
+        // Restore basic game stats
+        game.lives = state.lives;
+        game.gold = state.money;
+        game.score = state.money; // Money is the new score in v2
+        game.fusionCharges = state.fusionCharges || 0;
+        
+        // Restore spawn weights
+        game.spawnWeights = { ...state.spawnWeights };
+        
+        // Restore towers with v2 format
+        this.restoreTowersV2(game, state.towers);
+        
+        // Restore recipes unlocked
+        game.recipesUnlocked = state.recipesUnlocked || [];
+        
+        // Restore settings
+        if (state.settings) {
+            game.settings = { ...state.settings };
+        }
+        
+        // Set wave (simplified for now)
+        game.waveManager.currentWave = state.wave - 1; // Will increment on next wave start
+        
+        console.log('Game state restored successfully (v2 format)');
+        return true;
     }
     
     restoreGrid(grid, gridData) {
@@ -210,6 +308,23 @@ class SaveSystem {
             }
         });
     }
+
+    restoreTowersV2(game, towerData) {
+        if (!towerData) return;
+        
+        game.towers = [];
+        
+        towerData.forEach(towerInfo => {
+            const tower = this.createTowerFromDataV2(towerInfo);
+            if (tower) {
+                game.towers.push(tower);
+                
+                // Place tower on grid
+                const gridPos = game.grid.worldToGrid(tower.x, tower.y);
+                game.grid.setCell(gridPos.x, gridPos.y, 'tower', tower);
+            }
+        });
+    }
     
     createTowerFromData(towerInfo) {
         const towerClasses = {
@@ -228,6 +343,44 @@ class SaveSystem {
         // Restore tower state
         tower.level = towerInfo.level || 1;
         tower.targetingMode = towerInfo.targetingMode || 'first';
+        
+        // Apply upgrades to match saved level
+        for (let i = 1; i < tower.level; i++) {
+            tower.applyUpgrade();
+        }
+        
+        return tower;
+    }
+
+    createTowerFromDataV2(towerInfo) {
+        const towerKeyMap = {
+            'gear_turret': 'gearTurret',
+            'steam_cannon': 'steamCannon',
+            'tesla_coil': 'teslaCoil',
+            'poison_vent': 'poisonGasVent',
+            'frost_condenser': 'frostCondenser'
+        };
+        
+        const towerClasses = {
+            'steamCannon': SteamCannon,
+            'teslaCoil': TeslaCoil,
+            'frostCondenser': FrostCondenser,
+            'poisonGasVent': PoisonGasVent,
+            'gearTurret': GearTurret
+        };
+        
+        const mappedType = towerKeyMap[towerInfo.key] || towerInfo.key;
+        const TowerClass = towerClasses[mappedType];
+        if (!TowerClass) return null;
+        
+        const tower = new TowerClass(towerInfo.x, towerInfo.y);
+        
+        // Restore v2 tower state
+        tower.id = towerInfo.id;
+        tower.level = towerInfo.level || 1;
+        tower.kills = towerInfo.kills || 0;
+        tower.element = towerInfo.element;
+        tower.tags = towerInfo.tags;
         
         // Apply upgrades to match saved level
         for (let i = 1; i < tower.level; i++) {
