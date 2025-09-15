@@ -15,7 +15,7 @@
                     <span>Lives: </span><span id="lives">20</span>
                 </div>
                 <div class="stat">
-                    <span>Towers: </span><span id="tower-count">0</span>
+                    <span>Gems: </span><span id="gems">100</span>
                 </div>
                 <div class="stat">
                     <span>Wave: </span><span id="wave">1</span>
@@ -36,10 +36,10 @@
                             <div class="intro-content">
                                 <p class="intro-description">A Steampunk Tower Defense Adventure</p>
                                 <div class="game-explanation">
-                                    <p>🏗️ <strong>Build Phase:</strong> Place up to 5 random towers on the battlefield</p>
-                                    <p>⚡ <strong>Draft Phase:</strong> Choose which tower to keep - others become blocking crates</p>
-                                    <p>⚔️ <strong>Battle Phase:</strong> Your tower defends against enemy waves</p>
-                                    <p>💡 <strong>Strategy:</strong> Plan your maze with crates and position your chosen tower wisely!</p>
+                                    <p>💎 <strong>Build Mode:</strong> Use gems to place random towers strategically on the battlefield</p>
+                                    <p>⚙️ <strong>Combine Towers:</strong> Merge 2-3 towers to create powerful Tier 2 towers</p>
+                                    <p>⚔️ <strong>Battle Phase:</strong> Your towers defend against scaling enemy waves</p>
+                                    <p>💡 <strong>Strategy:</strong> Manage gems wisely and combine towers for maximum defense!</p>
                                 </div>
                                 <div id="save-game-check" class="hidden">
                                     <p class="save-prompt">Continue previous game or start fresh?</p>
@@ -74,7 +74,9 @@
                 <div id="controls">
                     <button id="start-wave-btn" class="primary">Start Wave</button>
                     <button id="pause-btn">Pause</button>
-                    <button id="place-tower-btn" class="secondary">Place Tower</button>
+                    <button id="place-tower-btn" class="secondary">Build Mode</button>
+                    <button id="finish-build-btn" class="secondary hidden">Finish Building</button>
+                    <button id="combine-towers-btn" class="secondary hidden">Combine Towers</button>
                     <button id="weights-btn" class="secondary">⚖️ Weights</button>
                 </div>
                 

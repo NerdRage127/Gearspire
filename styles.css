@@ -374,6 +374,21 @@ main {
     cursor: not-allowed;
 }
 
+/* Glow effect for ready start wave button */
+#controls button.glow {
+    animation: glowPulse 2s infinite;
+    box-shadow: 0 0 10px var(--accent-color);
+}
+
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px var(--accent-color);
+    }
+    50% {
+        box-shadow: 0 0 20px var(--accent-color), 0 0 30px var(--accent-color);
+    }
+}
+
 .tower-card {
     background: var(--primary-color);
     border: 1px solid var(--secondary-color);
