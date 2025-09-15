@@ -122,7 +122,8 @@ class BaseTower {
                 target.x, target.y,
                 this.damage,
                 5, // projectile speed
-                this.projectileType
+                this.projectileType,
+                this // Pass tower reference for kill tracking
             );
         }
     }

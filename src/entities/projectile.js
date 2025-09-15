@@ -88,7 +88,12 @@ class Projectile {
     hitSingle(enemies) {
         const target = this.findClosestEnemy(enemies, 15);
         if (target) {
-            target.takeDamage(this.damage);
+            const damageDealt = target.takeDamage(this.damage);
+            
+            // Check if enemy died and emit kill event
+            if (!target.isAlive() && this.sourceTower) {
+                this.emitKillEvent(target, this.sourceTower);
+            }
         }
     }
     
@@ -105,7 +110,13 @@ class Projectile {
                 (enemy.x - this.targetX) ** 2 + (enemy.y - this.targetY) ** 2
             );
             const damageMultiplier = Math.max(0.3, 1 - (distance / radius));
+            const wasAlive = enemy.isAlive();
             enemy.takeDamage(this.damage * damageMultiplier);
+            
+            // Check if enemy died and emit kill event
+            if (wasAlive && !enemy.isAlive() && this.sourceTower) {
+                this.emitKillEvent(enemy, this.sourceTower);
+            }
         });
         
         // Create explosion effect
@@ -121,7 +132,13 @@ class Projectile {
             if (hitTargets.has(currentTarget)) break;
             
             hitTargets.add(currentTarget);
+            const wasAlive = currentTarget.isAlive();
             currentTarget.takeDamage(this.damage * (0.8 ** chainCount));
+            
+            // Check if enemy died and emit kill event
+            if (wasAlive && !currentTarget.isAlive() && this.sourceTower) {
+                this.emitKillEvent(currentTarget, this.sourceTower);
+            }
             
             // Create lightning effect
             this.effects.push(new LightningEffect(
@@ -153,8 +170,14 @@ class Projectile {
         });
         
         affectedEnemies.forEach(enemy => {
+            const wasAlive = enemy.isAlive();
             enemy.takeDamage(this.damage);
             enemy.applySlow(0.5, 180); // 50% slow for 3 seconds
+            
+            // Check if enemy died and emit kill event
+            if (wasAlive && !enemy.isAlive() && this.sourceTower) {
+                this.emitKillEvent(enemy, this.sourceTower);
+            }
         });
         
         // Create frost effect
@@ -195,6 +218,27 @@ class Projectile {
         }
         
         return closest;
+    }
+
+    /**
+     * Emit a kill event when an enemy dies from this projectile
+     * @param {object} enemy - The enemy that died
+     * @param {object} tower - The tower that fired this projectile
+     */
+    emitKillEvent(enemy, tower) {
+        const eventData = {
+            enemyId: enemy.id || enemy,
+            enemyType: enemy.type,
+            byTowerKey: tower.type,
+            byTowerInstanceId: tower.id || tower
+        };
+
+        // Emit the event
+        const event = new CustomEvent('enemy:died', { detail: eventData });
+        document.dispatchEvent(event);
+        window.dispatchEvent(event);
+        
+        console.log('Enemy killed by tower:', eventData);
     }
     
     getColor() {

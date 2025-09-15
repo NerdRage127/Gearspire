@@ -22,6 +22,7 @@ class Game {
         this.towers = [];
         this.towersPlacedThisRound = 0;
         this.maxTowersPerRound = 5; // Can place up to 5 towers per round
+        this.newTowersThisRound = []; // Track new towers for this round
         this.fusionCharges = 0; // For combining towers
         
         // V2 mechanics
@@ -45,6 +46,7 @@ class Game {
         this.ui = new UI();
         this.pauseScreen = new PauseScreen();
         this.saveSystem = new SaveSystem();
+        this.killTracker = new KillTrackerSystem();
         
         // Settings
         this.settings = {
@@ -275,6 +277,12 @@ class Game {
     
     start() {
         this.isPlaying = true;
+        
+        // Initialize kill tracker
+        if (this.killTracker) {
+            this.killTracker.initialize();
+        }
+        
         this.gameLoop();
     }
     
@@ -443,6 +451,9 @@ class Game {
         const worldPos = this.grid.gridToWorld(gridX, gridY);
         const tower = TowerTypes.createTower(towerType, worldPos.x, worldPos.y);
         
+        // Assign unique ID for v2 kill tracking
+        tower.id = `t-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
         // Mark this tower as newly placed for this round
         tower.isNewThisRound = true;
         tower.isSelected = false;
@@ -486,8 +497,9 @@ class Game {
         }
     }
     
-    createProjectile(x, y, targetX, targetY, damage, speed, type) {
+    createProjectile(x, y, targetX, targetY, damage, speed, type, sourceTower = null) {
         const projectile = new Projectile(x, y, targetX, targetY, damage, speed, type);
+        projectile.sourceTower = sourceTower; // Track which tower fired this
         this.projectiles.push(projectile);
         return projectile;
     }
